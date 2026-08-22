@@ -17,25 +17,28 @@ export const DIALOGUES: Dialogue[] = [
     id: "d1",
     show: 0.1,
     hide: 0.3,
-    quote: "Sometimes you gotta run before you can walk.",
-    speaker: "Tony Stark",
-    film: "IRON MAN — 2008",
+    quote:
+      "Optech completely transformed my career. I got placed at TCS within 2 months of completing my course!",
+    speaker: "Priya Sharma",
+    film: "PGDCA GRADUATE",
   },
   {
     id: "d2",
     show: 0.35,
     hide: 0.55,
-    quote: "Genius. Billionaire. Playboy. Philanthropist.",
-    speaker: "Tony Stark",
-    film: "THE AVENGERS — 2012",
+    quote:
+      "Best institute in the Vidarbha region. Practical labs, real-world projects, and an amazing community.",
+    speaker: "Rahul Meshram",
+    film: "WEB DEVELOPMENT",
   },
   {
     id: "d3",
     show: 0.6,
     hide: 0.8,
-    quote: "Part of the journey is the end.",
-    speaker: "Tony Stark",
-    film: "AVENGERS: ENDGAME — 2019",
+    quote:
+      "Three decades of excellence. Industry-recognized certifications that actually open doors.",
+    speaker: "Alumni Network",
+    film: "EST. 1994 — DEORI",
   },
 ];
 

@@ -9,6 +9,12 @@
   --card-bg: rgba(24, 24, 27, 0.55);
   --card-border: rgba(255, 255, 255, 0.08);
   --hud-line: rgba(255, 255, 255, 0.1);
+  --color-destructive: #ef4444;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
 }
 
 @theme inline {
@@ -21,6 +27,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  color-scheme: dark;
+}
+
 html,
 body {
   background: var(--background);
@@ -28,6 +38,18 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+select {
+  color-scheme: dark;
+  background-color: #141416;
+  color: #e4e4e7;
+}
+
+select option,
+select optgroup {
+  background-color: #141416;
+  color: #e4e4e7;
 }
 
 body {
@@ -68,6 +90,25 @@ body {
     var(--hud-line) calc(100% - 1px) 100%
   );
   background-size: 16px 100%;
+}
+
+.marquee-track {
+  animation: marquee-slide 36s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+@keyframes marquee-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .grain::after {

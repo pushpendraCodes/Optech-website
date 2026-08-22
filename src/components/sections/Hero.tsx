@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EyebrowBadge } from "@/components/ui/EyebrowBadge";
 import { HudFrame } from "@/components/ui/HudFrame";
 import { DIALOGUES, FRAME_COUNT, HERO_TEXT_FADE_END, framePath } from "@/lib/hero";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 export function Hero() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const heroTextRef = useRef<HTMLDivElement | null>(null);
@@ -201,10 +203,10 @@ export function Hero() {
           }}
         />
 
-        <div className="pointer-events-none absolute left-6 top-24 text-accent md:left-10 md:top-28">
+        <div className="pointer-events-none absolute left-6 top-32 text-accent md:left-10 md:top-36">
           <HudFrame corner="tl" size={26} />
         </div>
-        <div className="pointer-events-none absolute right-6 top-24 text-accent md:right-10 md:top-28">
+        <div className="pointer-events-none absolute right-6 top-32 text-accent md:right-10 md:top-36">
           <HudFrame corner="tr" size={26} />
         </div>
         <div className="pointer-events-none absolute bottom-14 left-6 text-accent md:bottom-16 md:left-10">
@@ -219,15 +221,14 @@ export function Hero() {
           className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-start gap-5 px-6 pb-24 md:px-12 md:pb-28"
           style={{ transition: "opacity 80ms linear" }}
         >
-          <EyebrowBadge>MARK LXXXV // STARK INDUSTRIES // ONLINE</EyebrowBadge>
-          <h1 className="max-w-[14ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
-            I am
+          <EyebrowBadge>{t("hero_eyebrow")}</EyebrowBadge>
+          <h1 className="max-w-[16ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
+            {t("hero_name")}
             <br />
-            <span className="text-accent">Iron Man.</span>
+            <span className="text-accent">{t("hero_institute")}</span>
           </h1>
           <p className="max-w-[42ch] font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
-            Mark LXXXV nanotech suit. Arc reactor calibrated. Scroll to run a full
-            system diagnostic — J.A.R.V.I.S. is holding on the line.
+            {t("hero_lead")}
           </p>
         </div>
 
@@ -238,28 +239,28 @@ export function Hero() {
         >
           <span className="inline-flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
             <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_10px_rgba(212,162,47,0.85)]" />
-            Protocol &mdash; Mk LXXXV
+            {t("hero_premier")}
           </span>
           <h2 className="font-sans font-semibold leading-[0.88] tracking-tighter text-foreground text-[clamp(4rem,9.5vw,9rem)]">
-            Build
+            {t("hero_learn")}
             <br />
-            with <span className="text-accent">Devini</span>
+            {t("hero_at")} <span className="text-accent">Optech</span>
           </h2>
           <p className="max-w-[36ch] font-mono text-[11px] uppercase tracking-[0.22em] text-zinc-400">
-            Interfaces &amp; products, engineered like the Mark LXXXV.
+            {t("hero_sub")}
           </p>
         </div>
 
-        <div className="pointer-events-none absolute left-6 top-20 z-10 flex items-center gap-2 md:left-10 md:top-24">
+        <div className="pointer-events-none absolute left-6 top-28 z-10 flex items-center gap-2 md:left-10 md:top-32">
           <div className="h-px w-8 bg-accent/60" />
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-400">
-            Telemetry Link &mdash; Live
+            {t("hero_live")}
           </span>
         </div>
 
-        <div className="pointer-events-none absolute right-6 top-20 z-10 flex items-center gap-3 md:right-10 md:top-24">
+        <div className="pointer-events-none absolute right-6 top-28 z-10 flex items-center gap-3 md:right-10 md:top-32">
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-400">
-            Arc Reactor
+            {t("hero_placement")}
           </span>
           <span
             ref={powerReadoutRef}
@@ -280,7 +281,7 @@ export function Hero() {
           </div>
           <div className="mx-6 flex items-center justify-between pb-4 font-mono text-[10px] uppercase tracking-[0.28em] text-zinc-500 md:mx-10">
             <span>SEQ 001 / 169</span>
-            <span>J.A.R.V.I.S. // DIAGNOSTIC</span>
+            <span>OPTECH // CAMPUS TOUR</span>
             <span>Scroll &darr;</span>
           </div>
         </div>
@@ -347,7 +348,7 @@ export function Hero() {
 
         {!loaded && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-background px-6">
-            <EyebrowBadge>SUIT UP PROTOCOL // BOOTING</EyebrowBadge>
+            <EyebrowBadge>OPTECH // INITIALIZING</EyebrowBadge>
             <div className="h-px w-60 bg-white/10 md:w-80">
               <div
                 className="h-full bg-accent transition-[width] duration-150 ease-out"
@@ -355,7 +356,8 @@ export function Hero() {
               />
             </div>
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-zinc-500">
-              Loading Mark LXXXV &nbsp;&middot;&nbsp; {Math.round(loadProgress * 100)}%
+              Loading campus experience &nbsp;&middot;&nbsp;{" "}
+              {Math.round(loadProgress * 100)}%
             </p>
           </div>
         )}

@@ -1,19 +1,23 @@
-import { Navbar } from "@/components/ui/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { CinematicReveal } from "@/components/sections/CinematicReveal";
-import { SystemsNominal } from "@/components/sections/SystemsNominal";
-import { Footer } from "@/components/sections/Footer";
+import { Impact } from "@/components/sections/Impact";
+import { WhyChooseUs } from "@/components/sections/WhyChooseUs";
+import { Reviews } from "@/components/sections/Reviews";
+import { HomeCta } from "@/components/sections/HomeCta";
+import { HomeOverlays } from "@/components/site/HomeOverlays";
+import { HomeAdBanner } from "@/components/site/AdBanner";
 
 export default function Home() {
   return (
     <>
-      <Navbar />
-      <main>
-        <Hero />
-        <CinematicReveal />
-        <SystemsNominal />
-      </main>
-      <Footer />
+      <Hero />
+      <CinematicReveal />
+      <Impact />
+      <WhyChooseUs />
+      <HomeAdBanner />
+      <Reviews />
+      <HomeCta />
+      <HomeOverlays />
     </>
   );
 }

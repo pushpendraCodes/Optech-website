@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EyebrowBadge } from "@/components/ui/EyebrowBadge";
 import { HudFrame } from "@/components/ui/HudFrame";
 import { BEATS, CINE_FRAME_COUNT, cineFramePath } from "@/lib/cinematic";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 export function CinematicReveal() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const h2InevitableRef = useRef<HTMLHeadingElement | null>(null);
@@ -71,25 +73,25 @@ export function CinematicReveal() {
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = cw / ch;
 
+    // Fit the full frame (letterbox). Cover-crop + mobile 1.3x zoom made 1280x720
+    // ezgif stills look soft when stretched across a retina viewport.
     let drawW: number;
     let drawH: number;
     if (canvasRatio > imgRatio) {
-      drawW = cw;
-      drawH = cw / imgRatio;
-    } else {
       drawH = ch;
       drawW = ch * imgRatio;
-    }
-
-    if (window.innerWidth <= 768) {
-      drawW *= 1.3;
-      drawH *= 1.3;
+    } else {
+      drawW = cw;
+      drawH = cw / imgRatio;
     }
 
     const drawX = (cw - drawW) / 2;
     const drawY = (ch - drawH) / 2;
 
-    ctx.clearRect(0, 0, cw, ch);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#0a0a0b";
+    ctx.fillRect(0, 0, cw, ch);
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   }, []);
 
@@ -223,36 +225,36 @@ export function CinematicReveal() {
         </div>
 
         <div className="pointer-events-none absolute right-6 top-28 z-10 flex max-w-[46ch] flex-col items-end gap-5 text-right md:right-12 md:top-32">
-          <EyebrowBadge>TITAN II // FINAL FRAME</EyebrowBadge>
+          <EyebrowBadge>{t("cine_eyebrow")}</EyebrowBadge>
           <div className="relative self-stretch">
             <h2
               ref={h2InevitableRef}
               className="font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl lg:text-7xl"
               style={{ transition: "opacity 240ms ease-out" }}
             >
-              I am
+              {t("cine_h1")}
               <br />
-              <span className="text-accent">Inevitable.</span>
+              <span className="text-accent">{t("cine_h1_accent")}</span>
             </h2>
             <h2
               ref={h2IronManRef}
               className="absolute inset-0 font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl lg:text-7xl"
               style={{ opacity: 0, transition: "opacity 240ms ease-out" }}
             >
-              And I am
+              {t("cine_h2")}
               <br />
-              <span className="text-accent">Iron Man.</span>
+              <span className="text-accent">{t("cine_h2_accent")}</span>
             </h2>
           </div>
           <p className="max-w-[42ch] font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
-            Endgame &mdash; the snap heard across the universe. J.A.R.V.I.S. held the last frame so we could rebuild from it.
+            {t("cine_lead")}
           </p>
         </div>
 
         <div className="pointer-events-none absolute left-6 top-20 z-10 flex items-center gap-2 md:left-10 md:top-24">
           <div className="h-px w-8 bg-accent/60" />
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-400">
-            Flight Log &mdash; Archived
+            {t("cine_log")}
           </span>
         </div>
 
@@ -278,9 +280,9 @@ export function CinematicReveal() {
             />
           </div>
           <div className="mx-6 flex items-center justify-between pb-4 font-mono text-[10px] uppercase tracking-[0.28em] text-zinc-500 md:mx-10">
-            <span>MARK III // ARCHIVE</span>
-            <span>J.A.R.V.I.S. // PLAYBACK</span>
-            <span>Scroll &darr;</span>
+            <span>{t("cine_path")}</span>
+            <span>{t("cine_play")}</span>
+            <span>{t("cine_scroll")}</span>
           </div>
         </div>
 
@@ -352,20 +354,20 @@ export function CinematicReveal() {
           style={{ opacity: 0, transition: "opacity 80ms linear" }}
         >
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
-            Next &mdash; engage
+            Next &mdash; explore
           </span>
           <a
-            href="#systems"
+            href="/courses"
             className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-foreground backdrop-blur-md transition-all duration-200 hover:bg-white/[0.12] active:translate-y-[1px]"
           >
-            Open diagnostics
-            <span aria-hidden>&darr;</span>
+            View courses
+            <span aria-hidden>&rarr;</span>
           </a>
         </div>
 
         {!loaded && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-background px-6">
-            <EyebrowBadge>FLIGHT LOG // RESTORING</EyebrowBadge>
+            <EyebrowBadge>CAREER PATH // LOADING</EyebrowBadge>
             <div className="h-px w-60 bg-white/10 md:w-80">
               <div
                 className="h-full bg-accent transition-[width] duration-150 ease-out"
@@ -373,7 +375,7 @@ export function CinematicReveal() {
               />
             </div>
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-zinc-500">
-              Rendering Mark III &nbsp;&middot;&nbsp; {Math.round(loadProgress * 100)}%
+              Rendering pathway &nbsp;&middot;&nbsp; {Math.round(loadProgress * 100)}%
             </p>
           </div>
         )}
