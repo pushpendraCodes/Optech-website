@@ -5,7 +5,7 @@ import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvide
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { StudentAuthProvider } from "@/components/providers/StudentAuth";
 import { SiteChrome } from "@/components/site/SiteChrome";
-import { CustomCursor } from "@/components/site/CustomCursor";
+import { AuroraCursorTrail } from "@/components/site/AuroraCursorTrail";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +39,7 @@ export default function RootLayout({
         <SmoothScrollProvider>
           <I18nProvider>
             <StudentAuthProvider>
-              <CustomCursor />
+              <AuroraCursorTrail />
               <SiteChrome>{children}</SiteChrome>
             </StudentAuthProvider>
           </I18nProvider>

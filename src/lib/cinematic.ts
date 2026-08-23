@@ -1,7 +1,7 @@
-export const CINE_FRAME_COUNT = 168;
+export const CINE_FRAME_COUNT = 40;
 
 export const cineFramePath = (n: number) =>
-  `/frames3/ezgif-frame-${String(n).padStart(3, "0")}.jpg`;
+  `/frames4/ezgif-frame-${String(n).padStart(3, "0")}.png`;
 
 export type Beat = {
   id: string;

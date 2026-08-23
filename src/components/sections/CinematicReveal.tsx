@@ -3,15 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EyebrowBadge } from "@/components/ui/EyebrowBadge";
 import { HudFrame } from "@/components/ui/HudFrame";
-import { BEATS, CINE_FRAME_COUNT, cineFramePath } from "@/lib/cinematic";
+import {
+  BEATS,
+  CINE_FRAME_COUNT,
+  CINE_INTRO_FADE_END,
+  cineFramePath,
+} from "@/lib/cinematic";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export function CinematicReveal() {
   const { t } = useI18n();
   const sectionRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const h2InevitableRef = useRef<HTMLHeadingElement | null>(null);
-  const h2IronManRef = useRef<HTMLHeadingElement | null>(null);
+  const introRef = useRef<HTMLDivElement | null>(null);
+  const bigLeftTextRef = useRef<HTMLDivElement | null>(null);
   const outroRef = useRef<HTMLDivElement | null>(null);
   const progressFillRef = useRef<HTMLDivElement | null>(null);
   const seqReadoutRef = useRef<HTMLSpanElement | null>(null);
@@ -20,6 +25,7 @@ export function CinematicReveal() {
   const tickingRef = useRef(false);
   const loadedRef = useRef(false);
   const lastFrameRef = useRef(-1);
+  const lastProgressRef = useRef(0);
   const prevVisibleIdsRef = useRef("");
 
   const [loadProgress, setLoadProgress] = useState(0);
@@ -61,7 +67,7 @@ export function CinematicReveal() {
     };
   }, []);
 
-  const drawFrame = useCallback((index: number) => {
+  const drawFrame = useCallback((index: number, _progress = 0) => {
     const canvas = canvasRef.current;
     const img = framesRef.current[index];
     if (!canvas || !img || !img.complete || !img.naturalWidth) return;
@@ -73,8 +79,6 @@ export function CinematicReveal() {
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = cw / ch;
 
-    // Fit the full frame (letterbox). Cover-crop + mobile 1.3x zoom made 1280x720
-    // ezgif stills look soft when stretched across a retina viewport.
     let drawW: number;
     let drawH: number;
     if (canvasRatio > imgRatio) {
@@ -103,7 +107,10 @@ export function CinematicReveal() {
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
-    drawFrame(lastFrameRef.current >= 0 ? lastFrameRef.current : 0);
+    drawFrame(
+      lastFrameRef.current >= 0 ? lastFrameRef.current : 0,
+      lastProgressRef.current,
+    );
   }, [drawFrame]);
 
   useEffect(() => {
@@ -114,7 +121,7 @@ export function CinematicReveal() {
 
   useEffect(() => {
     if (!loaded) return;
-    drawFrame(0);
+    drawFrame(0, 0);
     lastFrameRef.current = 0;
   }, [loaded, drawFrame]);
 
@@ -135,29 +142,31 @@ export function CinematicReveal() {
             ? 0
             : Math.min(1, Math.max(0, -rect.top / scrollable));
 
+        lastProgressRef.current = progress;
+
         const frameIndex = Math.min(
           CINE_FRAME_COUNT - 1,
           Math.floor(progress * CINE_FRAME_COUNT),
         );
-        if (frameIndex !== lastFrameRef.current) {
-          lastFrameRef.current = frameIndex;
-          drawFrame(frameIndex);
+        lastFrameRef.current = frameIndex;
+        drawFrame(frameIndex, progress);
+
+        if (introRef.current) {
+          const opacity = Math.max(0, 1 - progress / CINE_INTRO_FADE_END);
+          introRef.current.style.opacity = String(opacity);
+          introRef.current.style.transform = `translateX(${(1 - opacity) * -28}px) translateY(${(1 - opacity) * 12}px)`;
         }
 
-        if (h2InevitableRef.current) {
-          const op = Math.min(1, Math.max(0, (0.52 - progress) / 0.1));
-          h2InevitableRef.current.style.opacity = String(op);
-        }
-
-        if (h2IronManRef.current) {
-          const op = Math.min(1, Math.max(0, (progress - 0.48) / 0.1));
-          h2IronManRef.current.style.opacity = String(op);
+        if (bigLeftTextRef.current) {
+          const op = Math.min(1, Math.max(0, (progress - 0.1) / 0.08));
+          bigLeftTextRef.current.style.opacity = String(op);
+          bigLeftTextRef.current.style.transform = `translateX(${(1 - op) * -36}px) translateY(${(1 - op) * 14}px)`;
         }
 
         if (outroRef.current) {
           const op = Math.min(1, Math.max(0, (progress - 0.86) / 0.06));
           outroRef.current.style.opacity = String(op);
-          outroRef.current.style.transform = `translateY(${(1 - op) * 14}px)`;
+          outroRef.current.style.transform = `translateX(${(1 - op) * 24}px)`;
         }
 
         if (progressFillRef.current) {
@@ -191,7 +200,7 @@ export function CinematicReveal() {
     <section
       ref={sectionRef}
       id="cinematic"
-      className="scroll-animation relative border-t border-white/5 bg-background"
+      className="scroll-animation-cine relative border-t border-white/5 bg-background"
     >
       <div
         className="sticky top-0 min-h-[100dvh] w-full overflow-hidden bg-background"
@@ -207,14 +216,14 @@ export function CinematicReveal() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 80% at 50% 90%, transparent 30%, rgba(10,10,11,0.45) 70%, rgba(10,10,11,0.85) 100%)",
+              "radial-gradient(120% 80% at 50% 10%, transparent 30%, rgba(10,10,11,0.45) 70%, rgba(10,10,11,0.85) 100%)",
           }}
         />
 
-        <div className="pointer-events-none absolute left-6 top-24 text-accent md:left-10 md:top-28">
+        <div className="pointer-events-none absolute left-6 top-32 text-accent md:left-10 md:top-36">
           <HudFrame corner="tl" size={26} />
         </div>
-        <div className="pointer-events-none absolute right-6 top-24 text-accent md:right-10 md:top-28">
+        <div className="pointer-events-none absolute right-6 top-32 text-accent md:right-10 md:top-36">
           <HudFrame corner="tr" size={26} />
         </div>
         <div className="pointer-events-none absolute bottom-14 left-6 text-accent md:bottom-16 md:left-10">
@@ -224,41 +233,52 @@ export function CinematicReveal() {
           <HudFrame corner="br" size={26} />
         </div>
 
-        <div className="pointer-events-none absolute right-6 top-28 z-10 flex max-w-[46ch] flex-col items-end gap-5 text-right md:right-12 md:top-32">
+        <div
+          ref={introRef}
+          className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-start gap-5 px-6 pb-24 md:px-12 md:pb-28"
+          style={{ transition: "opacity 80ms linear, transform 80ms linear" }}
+        >
           <EyebrowBadge>{t("cine_eyebrow")}</EyebrowBadge>
-          <div className="relative self-stretch">
-            <h2
-              ref={h2InevitableRef}
-              className="font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl lg:text-7xl"
-              style={{ transition: "opacity 240ms ease-out" }}
-            >
-              {t("cine_h1")}
-              <br />
-              <span className="text-accent">{t("cine_h1_accent")}</span>
-            </h2>
-            <h2
-              ref={h2IronManRef}
-              className="absolute inset-0 font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl lg:text-7xl"
-              style={{ opacity: 0, transition: "opacity 240ms ease-out" }}
-            >
-              {t("cine_h2")}
-              <br />
-              <span className="text-accent">{t("cine_h2_accent")}</span>
-            </h2>
-          </div>
+          <h2 className="max-w-[16ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
+            {t("cine_h1")}
+            <br />
+            <span className="text-accent">{t("cine_h1_accent")}</span>
+          </h2>
           <p className="max-w-[42ch] font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
             {t("cine_lead")}
           </p>
         </div>
 
-        <div className="pointer-events-none absolute left-6 top-20 z-10 flex items-center gap-2 md:left-10 md:top-24">
+        <div
+          ref={bigLeftTextRef}
+          className="pointer-events-none absolute bottom-24 left-6 z-10 hidden max-w-[58%] flex-col gap-5 md:flex md:bottom-28 md:left-12"
+          style={{ opacity: 0, transition: "opacity 80ms linear, transform 80ms linear" }}
+        >
+          <span className="inline-flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
+            <span
+              aria-hidden
+              className="inline-block h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_10px_rgba(212,162,47,0.85)]"
+            />
+            {t("cine_log")}
+          </span>
+          <h2 className="font-sans font-semibold leading-[0.88] tracking-tighter text-foreground text-[clamp(3.4rem,8.5vw,8rem)]">
+            {t("cine_h2")}
+            <br />
+            <span className="text-accent">{t("cine_h2_accent")}</span>
+          </h2>
+          <p className="max-w-[36ch] font-mono text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+            {t("cine_path")}
+          </p>
+        </div>
+
+        <div className="pointer-events-none absolute left-6 top-28 z-10 flex items-center gap-2 md:left-10 md:top-32">
           <div className="h-px w-8 bg-accent/60" />
           <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-400">
             {t("cine_log")}
           </span>
         </div>
 
-        <div className="pointer-events-none absolute right-6 top-20 z-10 flex items-center gap-3 md:right-10 md:top-24">
+        <div className="pointer-events-none absolute right-6 top-28 z-10 flex items-center gap-3 md:right-10 md:top-32">
           <span
             ref={seqReadoutRef}
             className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent"
@@ -290,10 +310,10 @@ export function CinematicReveal() {
           const visible = visibleBeats.has(b.id);
           const position =
             i === 0
-              ? "top-[24%] left-6 md:left-12"
+              ? "top-[22%] right-6 md:right-12"
               : i === 1
-              ? "top-1/2 -translate-y-1/2 left-6 md:left-12"
-              : "bottom-24 left-6 md:bottom-28 md:left-12";
+                ? "top-1/2 -translate-y-1/2 right-6 md:right-12"
+                : "bottom-24 right-6 md:bottom-28 md:right-12";
           return (
             <div
               key={b.id}
@@ -301,7 +321,9 @@ export function CinematicReveal() {
             >
               <figure
                 className={`card-surface pointer-events-auto p-6 transition-all duration-400 ease-out ${
-                  visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+                  visible
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-8 opacity-0"
                 }`}
               >
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
@@ -321,14 +343,16 @@ export function CinematicReveal() {
           );
         })}
 
-        <div className="pointer-events-none absolute inset-x-0 top-[36%] z-20 flex flex-col gap-3 px-6 md:hidden">
+        <div className="pointer-events-none absolute inset-x-0 top-[38%] z-20 flex flex-col gap-3 px-6 md:hidden">
           {BEATS.map((b) => {
             const visible = visibleBeats.has(b.id);
             return (
               <figure
                 key={b.id}
                 className={`card-surface pointer-events-auto p-5 transition-all duration-400 ease-out ${
-                  visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                  visible
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-6 opacity-0"
                 }`}
               >
                 <span className="font-mono text-[9px] uppercase tracking-[0.28em] text-accent">
@@ -351,7 +375,7 @@ export function CinematicReveal() {
         <div
           ref={outroRef}
           className="pointer-events-none absolute bottom-24 right-6 z-10 flex flex-col items-end gap-4 md:bottom-32 md:right-12"
-          style={{ opacity: 0, transition: "opacity 80ms linear" }}
+          style={{ opacity: 0, transition: "opacity 80ms linear, transform 80ms linear" }}
         >
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
             Next &mdash; explore

@@ -1,5 +1,5 @@
 export const GOOGLE_REVIEW_URL =
-  "https://www.google.com/search?q=Optech+Computer+Institute+Deori+reviews";
+  "https://search.google.com/local/writereview?placeid=ChIJkXVOL_OTKzoRjOzwf4HFYPo";
 
 export const MARQUEE_ITEMS = [
   {
