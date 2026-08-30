@@ -1,17 +1,25 @@
-import { USEFUL_LINKS } from "@/lib/site-content";
-import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+"use client";
 
-export const metadata = { title: "Useful links" };
+import { USEFUL_LINKS } from "@/lib/site-content";
+import { ArrowUpRight } from "@phosphor-icons/react";
+import { useGetLinksQuery } from "@/lib/api";
 
 export default function LinksPage() {
+  const { data } = useGetLinksQuery();
+  const links = data?.data?.length
+    ? data.data.map((link) => ({
+        href: String(link.href ?? "#"),
+        title: String(link.title ?? ""),
+        description: String(link.body ?? ""),
+      }))
+    : USEFUL_LINKS;
+
   return (
     <div className="mx-auto max-w-[1400px]">
       <h1 className="font-sans text-3xl font-semibold tracking-tight">Useful links</h1>
-      <p className="mt-2 font-sans text-sm text-zinc-400">
-        Admin-curated exam portals and resources.
-      </p>
+      <p className="mt-2 font-sans text-sm text-zinc-400">Admin-curated exam portals and resources.</p>
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        {USEFUL_LINKS.map((link) => (
+        {links.map((link) => (
           <a
             key={link.href}
             href={link.href}

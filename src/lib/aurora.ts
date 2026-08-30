@@ -1,41 +1,45 @@
 export const AURORA_CONFIG = {
   enabled: true,
-  intensity: 0.68,
-  viscosity: 0.918,
-  diffusion: 0.965,
-  decay: 0.986,
-  turbulence: 0.38,
-  cursorInfluence: 1,
-  colorSpeed: 0.14,
-  maxDpr: 1.35,
-  simScale: 0.4,
-  pressureIters: 14,
-  splatForce: 42,
-  splatRadius: 0.00028,
-  mouseLerp: 0.11,
+  SIM_RESOLUTION: 128,
+  DYE_RESOLUTION: 1024,
+  DYE_RESOLUTION_MOBILE: 512,
+  DENSITY_DISSIPATION: 2.6,
+  VELOCITY_DISSIPATION: 1.6,
+  PRESSURE: 0.8,
+  PRESSURE_ITERATIONS: 20,
+  CURL: 32,
+  SPLAT_RADIUS: 0.22,
+  SPLAT_RADIUS_MOBILE: 0.32,
+  SPLAT_FORCE: 5200,
+  COLOR_CYCLE: 0.18,
 } as const;
 
-export type AuroraConfig = typeof AURORA_CONFIG;
+const PALETTE_HUES = [262, 217, 189, 330, 160, 43];
 
-export function auroraColor(time: number): [number, number, number] {
-  const t = ((time * AURORA_CONFIG.colorSpeed) % 1 + 1) % 1;
-  const stops: [number, number, number][] = [
-    [0.08, 0.72, 0.38],
-    [0.12, 0.88, 0.74],
-    [0.22, 0.78, 0.96],
-    [0.28, 0.42, 0.98],
-    [0.52, 0.28, 0.92],
-    [0.78, 0.22, 0.62],
-    [0.55, 0.78, 0.28],
-  ];
-  const scaled = t * (stops.length - 1);
-  const i = Math.floor(scaled);
-  const f = scaled - i;
-  const a = stops[i];
-  const b = stops[Math.min(i + 1, stops.length - 1)];
-  return [
-    a[0] + (b[0] - a[0]) * f,
-    a[1] + (b[1] - a[1]) * f,
-    a[2] + (b[2] - a[2]) * f,
-  ];
+function hsvToRgb(h: number, s: number, v: number) {
+  h = ((h % 360) + 360) % 360 / 360;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  const table = [
+    [v, t, p],
+    [q, v, p],
+    [p, v, t],
+    [p, q, v],
+    [t, p, v],
+    [v, p, q],
+  ][i % 6];
+  return { r: table[0], g: table[1], b: table[2] };
+}
+
+export function generateAuroraColor() {
+  const hue = PALETTE_HUES[Math.floor(Math.random() * PALETTE_HUES.length)] + (Math.random() * 18 - 9);
+  const c = hsvToRgb(hue, 0.75, 1);
+  return { r: c.r * 0.22, g: c.g * 0.22, b: c.b * 0.22 };
+}
+
+export function isAuroraMobile() {
+  return /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 }

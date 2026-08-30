@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { STAFF } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { TiltStaffCard } from "./TiltStaffCard";
+import { TiltStaffCard, type StaffMember } from "./TiltStaffCard";
+import { useGetStaffQuery } from "@/lib/api";
 
 // Smile-shaped curve: middle pair sits highest/flattest, each step outward
 // drops lower and rotates more. No horizontal overlap — cards sit in a normal
@@ -21,7 +22,20 @@ const ARC = [
 
 export function StaffView() {
   const { t } = useI18n();
-  const featured = STAFF.slice(0, 6);
+  const { data } = useGetStaffQuery();
+  const members: StaffMember[] = data?.data?.length
+    ? data.data.map((member) => ({
+        name: member.name,
+        role: member.role ?? "",
+        focus: member.focus ?? "",
+        bio: member.bio ?? "",
+        photo: member.photo?.url ?? "",
+        linkedin: member.linkedin ?? "",
+        twitter: member.twitter ?? "",
+        website: member.website ?? "",
+      }))
+    : STAFF.map((member) => ({ ...member }));
+  const featured = members.filter((m) => m.photo).slice(0, 6);
 
   return (
     <>
@@ -96,7 +110,7 @@ export function StaffView() {
         </div>
 
         <div className="mx-auto grid max-w-[1400px] gap-x-7 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
-          {STAFF.map((member) => (
+          {members.map((member) => (
             <TiltStaffCard key={member.name} member={member} />
           ))}
         </div>

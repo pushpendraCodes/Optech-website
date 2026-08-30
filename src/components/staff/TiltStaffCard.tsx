@@ -3,15 +3,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Globe, LinkedinLogo, XLogo } from "@phosphor-icons/react";
-import { STAFF } from "@/lib/optech";
 
-type Member = (typeof STAFF)[number];
+export type StaffMember = {
+  name: string;
+  role: string;
+  focus?: string;
+  bio: string;
+  photo: string;
+  linkedin?: string;
+  twitter?: string;
+  website?: string;
+};
+
+function isHttp(url?: string) {
+  return Boolean(url && /^https?:\/\//i.test(url));
+}
 
 const MAX_TILT = 9; // deg — keep it subtle/premium, not a gimmick
 const MAX_PARALLAX = 12; // px, image drifts opposite the card tilt
 const GLARE_OPACITY = 0.35;
 
-export function TiltStaffCard({ member }: { member: Member }) {
+export function TiltStaffCard({ member }: { member: StaffMember }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const frame = useRef<number | null>(null);
   const [pose, setPose] = useState({ rotateX: 0, rotateY: 0, scale: 1 });
@@ -83,13 +95,17 @@ export function TiltStaffCard({ member }: { member: Member }) {
             transform: `translate3d(${parallaxX}px, ${parallaxY}px, 0) scale(1.08)`,
           }}
         >
-          <Image
-            src={member.photo}
-            alt={member.name}
-            width={480}
-            height={520}
-            className="aspect-[4/5] h-auto w-full object-cover"
-          />
+          {member.photo ? (
+            <Image
+              src={member.photo}
+              alt={member.name}
+              width={480}
+              height={520}
+              className="aspect-[4/5] h-auto w-full object-cover"
+            />
+          ) : (
+            <div className="aspect-[4/5] w-full bg-zinc-800" />
+          )}
         </div>
 
         {/* dynamic light/reflection that follows the cursor */}
@@ -110,27 +126,39 @@ export function TiltStaffCard({ member }: { member: Member }) {
       <p className="mt-1 font-sans text-sm text-accent">{member.role}</p>
       <p className="mt-3 font-sans text-sm leading-relaxed text-zinc-400">{member.bio}</p>
       <div className="mt-4 flex items-center gap-3 text-zinc-500">
-        <a
-          href={member.linkedin}
-          aria-label={`${member.name} LinkedIn`}
-          className="cursor-pointer transition-colors duration-200 hover:text-foreground"
-        >
-          <LinkedinLogo size={18} />
-        </a>
-        <a
-          href={member.twitter}
-          aria-label={`${member.name} X`}
-          className="cursor-pointer transition-colors duration-200 hover:text-foreground"
-        >
-          <XLogo size={18} />
-        </a>
-        <a
-          href={member.website}
-          aria-label={`${member.name} website`}
-          className="cursor-pointer transition-colors duration-200 hover:text-foreground"
-        >
-          <Globe size={18} />
-        </a>
+        {isHttp(member.linkedin) ? (
+          <a
+            href={member.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${member.name} LinkedIn`}
+            className="cursor-pointer transition-colors duration-200 hover:text-foreground"
+          >
+            <LinkedinLogo size={18} />
+          </a>
+        ) : null}
+        {isHttp(member.twitter) ? (
+          <a
+            href={member.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${member.name} X`}
+            className="cursor-pointer transition-colors duration-200 hover:text-foreground"
+          >
+            <XLogo size={18} />
+          </a>
+        ) : null}
+        {isHttp(member.website) ? (
+          <a
+            href={member.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${member.name} website`}
+            className="cursor-pointer transition-colors duration-200 hover:text-foreground"
+          >
+            <Globe size={18} />
+          </a>
+        ) : null}
       </div>
     </article>
   );

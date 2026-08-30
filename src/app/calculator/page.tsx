@@ -1,32 +1,66 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHero } from "@/components/ui/PageHero";
-import {
-  COURSES,
-  INSTALLMENT_RULES,
-  calcPayable,
-  formatInr,
-} from "@/lib/catalog";
+import { COURSES, INSTALLMENT_RULES, calcPayable, formatInr } from "@/lib/catalog";
 import { fieldClass, labelClass, selectClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useGetCoursesQuery, useQuoteFeeMutation } from "@/lib/api";
+import { loc } from "@/lib/loc";
 
 export default function CalculatorPage() {
   const { t } = useI18n();
-  const [slug, setSlug] = useState(COURSES[0].slug);
+  const { data } = useGetCoursesQuery();
+  const [quoteFee] = useQuoteFeeMutation();
+  const catalog = useMemo(
+    () =>
+      data?.data?.length
+        ? data.data.map((item) => ({
+            id: item._id,
+            slug: item.slug,
+            title: loc(item.title),
+            duration: item.duration ?? "",
+            fee: item.fee,
+          }))
+        : COURSES.map((item) => ({ id: "", slug: item.slug, title: item.title, duration: item.duration, fee: item.fee })),
+    [data],
+  );
+  const [slug, setSlug] = useState(catalog[0]?.slug ?? "");
   const [coupon, setCoupon] = useState("");
   const [parts, setParts] = useState(1);
-  const course = COURSES.find((item) => item.slug === slug) ?? COURSES[0];
-  const quote = useMemo(
-    () => calcPayable(course.fee, coupon.trim().toUpperCase() || undefined),
+  const [remote, setRemote] = useState<{ fee: number; discount: number; total: number } | null>(null);
+  const course = catalog.find((item) => item.slug === slug) ?? catalog[0];
+  const local = useMemo(
+    () => calcPayable(course?.fee ?? 0, coupon.trim().toUpperCase() || undefined),
     [course, coupon],
   );
+  const quote = remote ?? local;
   const installment = Math.ceil(quote.total / parts);
   const dates = Array.from({ length: parts }, (_, i) => {
-    const d = new Date(2026, 8, 12);
+    const d = new Date();
     d.setMonth(d.getMonth() + i);
     return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   });
+
+  useEffect(() => {
+    if (catalog[0] && !catalog.some((item) => item.slug === slug)) {
+      setSlug(catalog[0].slug);
+    }
+  }, [catalog, slug]);
+
+  useEffect(() => {
+    if (!course?.id) {
+      setRemote(null);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void quoteFee({ courseId: course.id, coupon: coupon.trim() || undefined, parts })
+        .unwrap()
+        .then((body) => setRemote({ fee: body.data.fee, discount: body.data.discount, total: body.data.total }))
+        .catch(() => setRemote(null));
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [course?.id, coupon, parts, quoteFee]);
 
   return (
     <>
@@ -45,11 +79,11 @@ export default function CalculatorPage() {
               </label>
               <select
                 id="course"
-                value={slug}
+                value={course?.slug ?? ""}
                 onChange={(e) => setSlug(e.target.value)}
                 className={selectClass}
               >
-                {COURSES.map((item) => (
+                {catalog.map((item) => (
                   <option key={item.slug} value={item.slug}>
                     {item.title} · {item.duration}
                   </option>
@@ -79,19 +113,14 @@ export default function CalculatorPage() {
                 className={selectClass}
               >
                 <option value={1}>{t("calc_full")}</option>
-                <option
-                  value={INSTALLMENT_RULES.parts}
-                  disabled={quote.total < INSTALLMENT_RULES.minFeeForEmi}
-                >
+                <option value={INSTALLMENT_RULES.parts} disabled={quote.total < INSTALLMENT_RULES.minFeeForEmi}>
                   {t("calc_parts_n", { n: INSTALLMENT_RULES.parts })}
                 </option>
               </select>
             </div>
           </div>
           <div className="card-surface p-6 md:p-8">
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">
-              {t("calc_estimate")}
-            </p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">{t("calc_estimate")}</p>
             <dl className="mt-5 space-y-3 font-sans text-sm">
               <div className="flex justify-between">
                 <dt className="text-zinc-500">{t("calc_base")}</dt>
@@ -99,10 +128,7 @@ export default function CalculatorPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-zinc-500">{t("enroll_discount")}</dt>
-                <dd>
-                  {formatInr(quote.discount)}
-                  {quote.rule ? ` · ${quote.rule.label}` : ""}
-                </dd>
+                <dd>{formatInr(quote.discount)}</dd>
               </div>
               <div className="flex justify-between text-lg font-semibold">
                 <dt>{t("calc_total")}</dt>

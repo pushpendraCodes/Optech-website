@@ -11,6 +11,9 @@ import {
   type AttendanceStatus,
 } from "@/lib/student-data";
 import type { MessageKey } from "@/lib/i18n";
+import { useGetStudentAttendanceQuery, useGetStudentDashboardQuery } from "@/lib/api";
+import { loc } from "@/lib/loc";
+import { useStudentAuth } from "@/components/providers/StudentAuth";
 
 const WEEKDAYS: MessageKey[] = [
   "st_wd_sun",
@@ -64,31 +67,60 @@ function dayStatus(rows: AttendanceRow[]): AttendanceStatus | null {
 
 export function AttendanceView() {
   const { t, locale } = useI18n();
+  const { studentId } = useStudentAuth();
   const localeTag = locale === "hi" ? "hi-IN" : locale === "mr" ? "mr-IN" : "en-IN";
+  const { data } = useGetStudentAttendanceQuery(undefined, { skip: !studentId });
+  const { data: dash } = useGetStudentDashboardQuery(undefined, { skip: !studentId });
+
+  const log = useMemo<AttendanceRow[]>(() => {
+    if (!data?.data?.length) return ATTENDANCE_LOG;
+    return data.data.map((row) => ({
+      date: String(row.date ?? "").slice(0, 10),
+      course: loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course",
+      status: (["present", "late", "absent"].includes(String(row.status))
+        ? row.status
+        : "present") as AttendanceStatus,
+    }));
+  }, [data]);
+
+  const courseCards = useMemo(() => {
+    const enrollments = (dash?.data?.enrollments as Record<string, unknown>[] | undefined) ?? [];
+    if (enrollments.length) {
+      return enrollments.map((row) => {
+        const title = loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course";
+        const rows = log.filter((item) => item.course === title);
+        const presentish = rows.filter((item) => item.status !== "absent").length;
+        return {
+          slug: String((row.course as { slug?: string } | undefined)?.slug ?? title),
+          title,
+          attendance: rows.length ? Math.round((presentish / rows.length) * 100) : Number(dash?.data?.attendancePercent ?? 0),
+        };
+      });
+    }
+    return DEMO_STUDENT.courses;
+  }, [dash, log]);
 
   const months = useMemo(() => {
-    const unique = [...new Set(ATTENDANCE_LOG.map((row) => monthKey(row.date)))];
+    const unique = [...new Set(log.map((row) => monthKey(row.date)).filter(Boolean))];
     return unique.sort();
-  }, []);
+  }, [log]);
 
-  const [month, setMonth] = useState(months[months.length - 1] ?? "2026-08");
+  const [month, setMonth] = useState("");
   const [course, setCourse] = useState("all");
+  const activeMonth = month && months.includes(month) ? month : (months[months.length - 1] ?? "2026-08");
 
-  const courses = useMemo(
-    () => [...new Set(ATTENDANCE_LOG.map((row) => row.course))],
-    [],
-  );
+  const courses = useMemo(() => [...new Set(log.map((row) => row.course))], [log]);
 
-  const monthIndex = months.indexOf(month);
-  const { year, month: monthNum } = parseMonth(month);
+  const monthIndex = months.indexOf(activeMonth);
+  const { year, month: monthNum } = parseMonth(activeMonth);
 
   const filtered = useMemo(
     () =>
-      ATTENDANCE_LOG.filter(
+      log.filter(
         (row) =>
-          monthKey(row.date) === month && (course === "all" || row.course === course),
+          monthKey(row.date) === activeMonth && (course === "all" || row.course === course),
       ),
-    [month, course],
+    [log, activeMonth, course],
   );
 
   const byDate = useMemo(() => {
@@ -130,7 +162,7 @@ export function AttendanceView() {
       <p className="mt-2 font-sans text-sm text-zinc-400">{t("st_att_lead")}</p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        {DEMO_STUDENT.courses.map((item) => (
+        {courseCards.map((item) => (
           <article key={item.slug} className="card-surface p-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
               {item.title}
@@ -156,7 +188,7 @@ export function AttendanceView() {
           </button>
           <select
             id="att-month"
-            value={month}
+            value={activeMonth}
             onChange={(e) => setMonth(e.target.value)}
             className={selectClass}
           >

@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, X } from "@phosphor-icons/react";
 import { HOME_POPUP, SIDE_ADS } from "@/lib/site-content";
 import { btnPrimary } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useGetAdsQuery, useGetPopupsQuery } from "@/lib/api";
 
 const MAIN_KEY = "optech-main-popup";
 const SIDE_KEY = "optech-side-ad";
@@ -17,6 +19,41 @@ export function HomeOverlays() {
   const [adIndex, setAdIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const { t } = useI18n();
+  const { data: popupData } = useGetPopupsQuery();
+  const { data: adsData } = useGetAdsQuery();
+
+  // Public API returns at most one active main popup
+  const apiPopup = popupData?.data?.[0];
+  const popup = apiPopup
+    ? {
+        title: apiPopup.title,
+        body: apiPopup.body ?? "",
+        href: apiPopup.href || "/courses",
+        cta: apiPopup.cta || "Learn more",
+        image: apiPopup.image?.url ?? "",
+        points: [] as string[],
+        eyebrow: "Announcement",
+      }
+    : {
+        ...HOME_POPUP,
+        image: "",
+        points: [...HOME_POPUP.points],
+      };
+
+  const sideAds =
+    adsData?.data?.filter((item) => item.slot === "side").map((item) => ({
+      id: item._id,
+      label: "Sponsored",
+      title: item.title,
+      body: item.body ?? "",
+      href: item.href || "/courses",
+      cta: item.cta || "View",
+      image: item.image?.url ?? "",
+    })) ?? [];
+  const ads = sideAds.length
+    ? sideAds
+    : SIDE_ADS.map((item) => ({ ...item, image: "" }));
+  const ad = ads[adIndex] ?? ads[0];
 
   useEffect(() => {
     if (!sessionStorage.getItem(MAIN_KEY)) {
@@ -27,14 +64,14 @@ export function HomeOverlays() {
   }, []);
 
   useEffect(() => {
-    if (!showSide || paused || SIDE_ADS.length < 2) return;
+    if (!showSide || paused || ads.length < 2) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
     const timer = window.setInterval(() => {
-      setAdIndex((i) => (i + 1) % SIDE_ADS.length);
+      setAdIndex((i) => (i + 1) % ads.length);
     }, ROTATE_MS);
     return () => window.clearInterval(timer);
-  }, [showSide, paused]);
+  }, [showSide, paused, ads.length]);
 
   const closeMain = () => {
     sessionStorage.setItem(MAIN_KEY, "1");
@@ -46,8 +83,6 @@ export function HomeOverlays() {
     sessionStorage.setItem(SIDE_KEY, "1");
     setShowSide(false);
   };
-
-  const ad = SIDE_ADS[adIndex];
 
   return (
     <>
@@ -74,32 +109,63 @@ export function HomeOverlays() {
               <X size={18} weight="bold" />
             </button>
 
-            <div className="relative min-h-[220px] bg-[radial-gradient(circle_at_20%_15%,rgba(212,162,47,0.32),transparent_52%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.06),transparent_45%)] p-8 md:min-h-[420px] md:p-12">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-accent">
-                {HOME_POPUP.eyebrow}
-              </p>
-              <h2
-                id="home-popup-title"
-                className="mt-5 max-w-[16ch] font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl"
-              >
-                {HOME_POPUP.title}
-              </h2>
-              <p className="mt-6 max-w-[42ch] font-sans text-base leading-relaxed text-zinc-300 md:text-lg">
-                {HOME_POPUP.body}
-              </p>
+            <div className="relative aspect-[4/3] min-h-[220px] overflow-hidden bg-zinc-950 md:aspect-auto md:min-h-[420px]">
+              {popup.image ? (
+                <Image
+                  src={popup.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 55vw, 100vw"
+                  className="object-contain"
+                  priority
+                />
+              ) : (
+                <div className="p-8 md:p-12">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-accent">
+                    {popup.eyebrow}
+                  </p>
+                  <h2
+                    id="home-popup-title"
+                    className="mt-5 max-w-[16ch] font-sans text-4xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-6xl"
+                  >
+                    {popup.title}
+                  </h2>
+                  <p className="mt-6 max-w-[42ch] font-sans text-base leading-relaxed text-zinc-300 md:text-lg">
+                    {popup.body}
+                  </p>
+                </div>
+              )}
+              {popup.image ? (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 md:p-8">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-accent">
+                    {popup.eyebrow}
+                  </p>
+                  <h2
+                    id="home-popup-title"
+                    className="mt-2 max-w-[18ch] font-sans text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-4xl"
+                  >
+                    {popup.title}
+                  </h2>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex flex-col justify-center gap-6 border-t border-white/8 p-8 md:border-l md:border-t-0 md:p-10">
-              <ul className="space-y-3">
-                {HOME_POPUP.points.map((point) => (
-                  <li key={point} className="flex gap-3 font-sans text-sm text-zinc-300">
-                    <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-              <Link href={HOME_POPUP.href} onClick={closeMain} className={`${btnPrimary} self-start px-6 py-3`}>
-                {HOME_POPUP.cta}
+              {popup.image ? (
+                <p className="font-sans text-base leading-relaxed text-zinc-300">{popup.body}</p>
+              ) : null}
+              {popup.points.length ? (
+                <ul className="space-y-3">
+                  {popup.points.map((point) => (
+                    <li key={point} className="flex gap-3 font-sans text-sm text-zinc-300">
+                      <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <Link href={popup.href} onClick={closeMain} className={`${btnPrimary} self-start px-6 py-3`}>
+                {popup.cta}
                 <ArrowUpRight size={14} weight="bold" />
               </Link>
               <button
@@ -136,10 +202,22 @@ export function HomeOverlays() {
             </div>
 
             <Link href={ad.href} className="block">
-              <div className="relative h-[180px] bg-[radial-gradient(circle_at_30%_20%,rgba(212,162,47,0.28),transparent_55%)]">
-                <span className="absolute left-3 top-3 font-mono text-[9px] uppercase tracking-[0.2em] text-accent/80">
-                  300 × 250
-                </span>
+              <div className="relative h-[250px] w-full overflow-hidden bg-zinc-950">
+                {ad.image ? (
+                  <Image
+                    src={ad.image}
+                    alt=""
+                    fill
+                    sizes="300px"
+                    className="object-cover object-center"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(212,162,47,0.28),transparent_55%)]">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-accent/80">
+                      300 × 250
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="min-h-[70px] px-3 py-3">
                 <p className="font-sans text-[15px] font-semibold leading-snug text-foreground">
@@ -155,9 +233,9 @@ export function HomeOverlays() {
               </div>
             </Link>
 
-            {SIDE_ADS.length > 1 ? (
+            {ads.length > 1 ? (
               <div className="flex items-center justify-center gap-1.5 border-t border-white/8 py-2">
-                {SIDE_ADS.map((item, i) => (
+                {ads.map((item, i) => (
                   <button
                     key={item.id}
                     type="button"

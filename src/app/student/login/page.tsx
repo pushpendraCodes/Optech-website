@@ -20,10 +20,10 @@ export default function StudentLoginPage() {
     if (ready && studentId) router.replace("/student/dashboard");
   }, [ready, studentId, router]);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const err = login(String(data.get("id") ?? ""), String(data.get("password") ?? ""));
+    const err = await login(String(data.get("id") ?? ""), String(data.get("password") ?? ""));
     if (err) {
       setError(err);
       errorRef.current?.focus();

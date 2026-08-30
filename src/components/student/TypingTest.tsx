@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { TYPING_HISTORY, TYPING_PASSAGES } from "@/lib/student-data";
 import { btnGhost, btnPrimary, fieldClass } from "@/components/ui/ui";
+import { useStartTypingMutation, useSubmitTypingMutation } from "@/lib/api";
 
 const DURATIONS = [1, 3, 5, 10] as const;
 
@@ -13,7 +14,9 @@ export function TypingTest() {
   const [left, setLeft] = useState(60);
   const [typed, setTyped] = useState("");
   const [done, setDone] = useState(false);
-  const passage = TYPING_PASSAGES[lang];
+  const [passage, setPassage] = useState(TYPING_PASSAGES[lang]);
+  const [startTyping] = useStartTypingMutation();
+  const [submitTyping] = useSubmitTypingMutation();
 
   useEffect(() => {
     if (!running || done) return;
@@ -44,12 +47,31 @@ export function TypingTest() {
     return { wpm, accuracy, errors };
   }, [typed, passage, minutes, left]);
 
-  const start = () => {
+  const start = async () => {
+    try {
+      const body = await startTyping({
+        language: lang === "english" ? "en" : "hi",
+        minutes,
+      }).unwrap();
+      setPassage(body.data.paragraph.text);
+    } catch {
+      setPassage(TYPING_PASSAGES[lang]);
+    }
     setTyped("");
     setDone(false);
     setLeft(minutes * 60);
     setRunning(true);
   };
+
+  useEffect(() => {
+    if (!done) return;
+    void submitTyping({
+      language: lang === "english" ? "en" : "hi",
+      minutes,
+      source: passage,
+      typed,
+    });
+  }, [done, lang, minutes, passage, submitTyping, typed]);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -111,7 +133,7 @@ export function TypingTest() {
       />
 
       <div className="mt-4 flex items-center gap-3">
-        <button type="button" className={btnPrimary} onClick={start} disabled={running}>
+        <button type="button" className={btnPrimary} onClick={() => void start()} disabled={running}>
           {done ? "Retry" : "Start"}
         </button>
         <span className="font-mono text-sm text-zinc-400">{left}s</span>

@@ -1,51 +1,66 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { DEMO_STUDENT, SESSION_KEY } from "@/lib/student-data";
+import { createContext, useCallback, useContext, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useStudentLoginMutation, useStudentLogoutMutation } from "@/lib/api";
+import { clearStudentSession, setStudentSession } from "@/lib/studentAuthSlice";
+import type { RootState } from "@/lib/store";
+import type { ApiSuccess, AuthPayload } from "@/lib/api-types";
 
 type AuthContextValue = {
   ready: boolean;
   studentId: string | null;
-  login: (id: string, password: string) => string | null;
+  name: string | null;
+  login: (id: string, password: string) => Promise<string | null>;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function StudentAuthProvider({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
-  const [studentId, setStudentId] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const session = useSelector((s: RootState) => s.studentAuth);
+  const [loginApi] = useStudentLoginMutation();
+  const [logoutApi] = useStudentLogoutMutation();
 
-  useEffect(() => {
-    setStudentId(window.localStorage.getItem(SESSION_KEY));
-    setReady(true);
-  }, []);
-
-  const login = useCallback((id: string, password: string) => {
-    const cleanId = id.trim().toUpperCase();
-    if (cleanId !== DEMO_STUDENT.id || password !== DEMO_STUDENT.password) {
-      return "Student ID or password is incorrect. Credentials are issued only after admission.";
-    }
-    window.localStorage.setItem(SESSION_KEY, cleanId);
-    setStudentId(cleanId);
-    return null;
-  }, []);
+  const login = useCallback(
+    async (id: string, password: string) => {
+      try {
+        const body = await loginApi({ studentId: id.trim(), password }).unwrap();
+        const payload = (body as ApiSuccess<AuthPayload>).data;
+        dispatch(
+          setStudentSession({
+            accessToken: payload.accessToken,
+            name: payload.user.name,
+            studentCode: payload.user.studentCode || payload.user.studentId || id.trim(),
+          }),
+        );
+        return null;
+      } catch (err) {
+        const message =
+          err && typeof err === "object" && "data" in err
+            ? String((err as { data?: { message?: string } }).data?.message || "")
+            : "";
+        return message || "Student ID or password is incorrect. Credentials are issued only after admission.";
+      }
+    },
+    [dispatch, loginApi],
+  );
 
   const logout = useCallback(() => {
-    window.localStorage.removeItem(SESSION_KEY);
-    setStudentId(null);
-  }, []);
+    void logoutApi();
+    dispatch(clearStudentSession());
+  }, [dispatch, logoutApi]);
 
   const value = useMemo(
-    () => ({ ready, studentId, login, logout }),
-    [ready, studentId, login, logout],
+    () => ({
+      ready: session.hydrated,
+      studentId: session.studentCode,
+      name: session.name,
+      login,
+      logout,
+    }),
+    [session.hydrated, session.studentCode, session.name, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

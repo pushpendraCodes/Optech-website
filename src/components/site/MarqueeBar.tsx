@@ -2,9 +2,19 @@
 
 import Link from "next/link";
 import { MARQUEE_ITEMS } from "@/lib/site-content";
+import { useGetMarqueeQuery } from "@/lib/api";
 
 export function MarqueeBar() {
-  const loop = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
+  const { data } = useGetMarqueeQuery();
+  const items =
+    data?.data?.length
+      ? data.data.map((item) => ({
+          id: item._id,
+          text: item.title,
+          href: item.href || "/courses",
+        }))
+      : MARQUEE_ITEMS;
+  const loop = [...items, ...items];
 
   return (
     <div className="overflow-hidden border-b border-white/8 bg-black/55 backdrop-blur-xl">

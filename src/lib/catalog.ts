@@ -46,6 +46,7 @@ export type CourseRecord = {
   body: string;
   certificate: string;
   demoVideo: string;
+  thumbnail?: string;
   staffIds: string[];
   syllabus: CourseModule[];
   batches: CourseBatch[];

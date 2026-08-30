@@ -5,21 +5,37 @@ import { PageHero } from "@/components/ui/PageHero";
 import { JOBS } from "@/lib/site-content";
 import { selectClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useGetJobsQuery } from "@/lib/api";
+import { loc } from "@/lib/loc";
 
 export default function JobsPage() {
   const { t } = useI18n();
+  const { data } = useGetJobsQuery();
   const [course, setCourse] = useState("all");
   const [location, setLocation] = useState("all");
-  const courses = [...new Set(JOBS.map((j) => j.course))];
-  const locations = [...new Set(JOBS.map((j) => j.location))];
+  const jobs =
+    data?.data?.length
+      ? data.data.map((job) => ({
+          id: String(job._id ?? job.title),
+          title: String(job.title ?? ""),
+          employer: String(job.employer ?? ""),
+          location: String(job.location ?? ""),
+          course: loc((job.course as { title?: unknown } | undefined)?.title as never),
+          type: String(job.type ?? ""),
+          description: String(job.description ?? ""),
+          contact: String(job.contact ?? ""),
+        }))
+      : JOBS;
+  const courses = [...new Set(jobs.map((j) => j.course).filter(Boolean))];
+  const locations = [...new Set(jobs.map((j) => j.location))];
   const list = useMemo(
     () =>
-      JOBS.filter(
+      jobs.filter(
         (job) =>
           (course === "all" || job.course === course) &&
           (location === "all" || job.location === location),
       ),
-    [course, location],
+    [jobs, course, location],
   );
 
   return (

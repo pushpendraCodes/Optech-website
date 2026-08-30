@@ -14,7 +14,6 @@ const navLinks: { key: MessageKey; href: string }[] = [
   { key: "nav_gallery", href: "/gallery" },
   { key: "nav_alumni", href: "/alumni" },
   { key: "nav_jobs", href: "/jobs" },
-  { key: "nav_live", href: "/live" },
   { key: "nav_scholarship", href: "/scholarship" },
   { key: "nav_calculator", href: "/calculator" },
   { key: "nav_videos", href: "/videos" },

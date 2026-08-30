@@ -23,7 +23,6 @@ export function Navbar() {
     { href: "/videos", label: t("nav_videos") },
     { href: "/alumni", label: t("nav_alumni") },
     { href: "/jobs", label: t("nav_jobs") },
-    { href: "/live", label: t("nav_live") },
     { href: "/scholarship", label: t("nav_scholarship") },
     { href: "/calculator", label: t("nav_calculator") },
     { href: "/notices", label: t("nav_notices") },

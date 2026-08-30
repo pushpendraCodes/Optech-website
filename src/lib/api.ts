@@ -1,0 +1,333 @@
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+import type { RootState } from "./store";
+import { clearStudentSession, setStudentSession } from "./studentAuthSlice";
+import type {
+  ApiSuccess,
+  AuthPayload,
+  CmsItem,
+  PublicCourse,
+  PublicNotice,
+  PublicStaff,
+} from "./api-types";
+
+const rawBase = fetchBaseQuery({
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "/api/v1",
+  credentials: "include",
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as RootState).studentAuth.accessToken;
+    if (token) headers.set("authorization", `Bearer ${token}`);
+    return headers;
+  },
+});
+
+const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
+  args,
+  api,
+  extra,
+) => {
+  let result = await rawBase(args, api, extra);
+  if (result.error && result.error.status === 401) {
+    const url = typeof args === "string" ? args : args.url;
+    if (url?.includes("/auth/refresh") || url?.includes("/auth/student/login")) {
+      api.dispatch(clearStudentSession());
+      return result;
+    }
+    const refresh = await rawBase({ url: "/auth/refresh", method: "POST" }, api, extra);
+    if (refresh.data) {
+      const body = refresh.data as ApiSuccess<AuthPayload>;
+      api.dispatch(
+        setStudentSession({
+          accessToken: body.data.accessToken,
+          name: body.data.user.name,
+          studentCode: body.data.user.studentCode || body.data.user.studentId || null,
+        }),
+      );
+      result = await rawBase(args, api, extra);
+    } else {
+      api.dispatch(clearStudentSession());
+    }
+  }
+  return result;
+};
+
+export const api = createApi({
+  reducerPath: "api",
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ["Public", "Student"],
+  endpoints: (build) => ({
+    getCourses: build.query<ApiSuccess<PublicCourse[]>, void>({
+      query: () => "/public/courses",
+      providesTags: ["Public"],
+    }),
+    getCourse: build.query<ApiSuccess<PublicCourse>, string>({
+      query: (slug) => `/public/courses/${slug}`,
+      providesTags: ["Public"],
+    }),
+    getCategories: build.query<ApiSuccess<{ slug: string; name: unknown }[]>, void>({
+      query: () => "/public/categories",
+      providesTags: ["Public"],
+    }),
+    getStaff: build.query<ApiSuccess<PublicStaff[]>, void>({
+      query: () => "/public/staff",
+      providesTags: ["Public"],
+    }),
+    getNotices: build.query<ApiSuccess<PublicNotice[]>, void>({
+      query: () => "/public/notices",
+      providesTags: ["Public"],
+    }),
+    getGallery: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/public/gallery",
+      providesTags: ["Public"],
+    }),
+    getAlumni: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/public/alumni",
+      providesTags: ["Public"],
+    }),
+    getJobs: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/public/jobs",
+      providesTags: ["Public"],
+    }),
+    getMarquee: build.query<ApiSuccess<CmsItem[]>, void>({
+      query: () => "/public/marquee",
+      providesTags: ["Public"],
+    }),
+    getAds: build.query<ApiSuccess<CmsItem[]>, void>({
+      query: () => "/public/ads",
+      providesTags: ["Public"],
+    }),
+    getPopups: build.query<ApiSuccess<CmsItem[]>, void>({
+      query: () => "/public/popups",
+      providesTags: ["Public"],
+    }),
+    getLinks: build.query<ApiSuccess<CmsItem[]>, void>({
+      query: () => "/public/links",
+      providesTags: ["Public"],
+    }),
+    getLive: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/public/live",
+      providesTags: ["Public"],
+    }),
+    getScholarship: build.query<ApiSuccess<Record<string, unknown>>, void>({
+      query: () => "/public/scholarship",
+      providesTags: ["Public"],
+    }),
+    quoteFee: build.mutation<
+      ApiSuccess<{
+        fee: number;
+        discount: number;
+        total: number;
+        coupon?: { code?: string; label?: string } | null;
+        plan?: { parts: number; perInstallment: number; allowed: boolean };
+      }>,
+      { courseId: string; coupon?: string; parts?: number; phone?: string; email?: string }
+    >({
+      query: (body) => ({ url: "/public/calculator", method: "POST", body }),
+    }),
+    validateEnrollmentCode: build.mutation<
+      ApiSuccess<{
+        kind: "coupon" | "scholarship" | "referral";
+        code: string;
+        fee: number;
+        discount: number;
+        total: number;
+        coupon?: { code?: string; label?: string } | null;
+        referrerName?: string;
+        message: string;
+      }>,
+      { courseId: string; code: string; phone?: string; email?: string }
+    >({
+      query: (body) => ({ url: "/public/enroll/validate-code", method: "POST", body }),
+    }),
+    studentLogin: build.mutation<ApiSuccess<AuthPayload>, { studentId: string; password: string }>({
+      query: (body) => ({ url: "/auth/student/login", method: "POST", body }),
+    }),
+    studentLogout: build.mutation<ApiSuccess<unknown>, void>({
+      query: () => ({ url: "/auth/logout", method: "POST" }),
+      invalidatesTags: ["Student"],
+    }),
+    getStudentDashboard: build.query<ApiSuccess<Record<string, unknown>>, void>({
+      query: () => "/student/dashboard",
+      providesTags: ["Student"],
+    }),
+    getStudentProfile: build.query<ApiSuccess<Record<string, unknown>>, void>({
+      query: () => "/student/profile",
+      providesTags: ["Student"],
+    }),
+    getStudentFees: build.query<ApiSuccess<Record<string, unknown>>, void>({
+      query: () => "/student/fees",
+      providesTags: ["Student"],
+    }),
+    getStudentAttendance: build.query<ApiSuccess<Record<string, unknown>[]>, string | void>({
+      query: (month) => (month ? `/student/attendance?month=${month}` : "/student/attendance"),
+      providesTags: ["Student"],
+    }),
+    getStudentNotes: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/notes",
+      providesTags: ["Student"],
+    }),
+    viewStudentNote: build.mutation<ApiSuccess<Record<string, unknown>>, string>({
+      query: (id) => ({ url: `/student/notes/${id}/view`, method: "POST" }),
+      invalidatesTags: ["Student"],
+    }),
+    getStudentQuizzes: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/quizzes",
+      providesTags: ["Student"],
+    }),
+    getStudentQuizAttempts: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/quiz-attempts",
+      providesTags: ["Student"],
+    }),
+    startQuiz: build.mutation<ApiSuccess<Record<string, unknown>>, string>({
+      query: (id) => ({ url: `/student/quizzes/${id}/start`, method: "POST" }),
+    }),
+    submitQuiz: build.mutation<
+      ApiSuccess<Record<string, unknown>>,
+      { id: string; answers: { index: number; value: string | number }[] }
+    >({
+      query: ({ id, answers }) => ({ url: `/student/quizzes/attempts/${id}/submit`, method: "POST", body: { answers } }),
+      invalidatesTags: ["Student"],
+    }),
+    startTyping: build.mutation<
+      ApiSuccess<{ paragraph: { text: string }; minutes: number }>,
+      { language: "en" | "hi"; minutes: number }
+    >({
+      query: (body) => ({ url: "/student/typing/start", method: "POST", body }),
+    }),
+    submitTyping: build.mutation<
+      ApiSuccess<Record<string, unknown>>,
+      { language: "en" | "hi"; minutes: number; source: string; typed: string }
+    >({
+      query: (body) => ({ url: "/student/typing/submit", method: "POST", body }),
+    }),
+    getStudentIdCard: build.query<ApiSuccess<Record<string, unknown>>, void>({
+      query: () => "/student/id-card",
+      providesTags: ["Student"],
+    }),
+    getStudentReferrals: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/referrals",
+      providesTags: ["Student"],
+    }),
+    createReferral: build.mutation<ApiSuccess<Record<string, unknown>>, { refereePhone: string }>({
+      query: (body) => ({ url: "/student/referrals", method: "POST", body }),
+      invalidatesTags: ["Student"],
+    }),
+    getStudentNotices: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/notices",
+      providesTags: ["Student"],
+    }),
+    getStudentNotifications: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/notifications",
+      providesTags: ["Student"],
+    }),
+    getStudentLive: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/live",
+      providesTags: ["Student"],
+    }),
+    savePushToken: build.mutation<ApiSuccess<{ saved: boolean }>, { token: string }>({
+      query: (body) => ({ url: "/student/push-token", method: "POST", body }),
+    }),
+    getPublicConfig: build.query<ApiSuccess<{ razorpayKeyId?: string }>, void>({
+      query: () => "/public/config",
+      providesTags: ["Public"],
+    }),
+    startCheckout: build.mutation<
+      ApiSuccess<{
+        order: { id: string; amount: number; currency: string };
+        paymentId: string;
+        quote: { fee: number; discount: number; total: number };
+      }>,
+      {
+        name: string;
+        email: string;
+        phone: string;
+        courseId: string;
+        batchId?: string;
+        coupon?: string;
+        parts?: number;
+        referralCode?: string;
+      }
+    >({
+      query: (body) => ({ url: "/public/enroll/checkout", method: "POST", body }),
+    }),
+    verifyCheckout: build.mutation<
+      ApiSuccess<Record<string, unknown>>,
+      { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }
+    >({
+      query: (body) => ({ url: "/public/enroll/verify", method: "POST", body }),
+    }),
+    submitScholarship: build.mutation<
+      ApiSuccess<{
+        percent: number;
+        score?: number;
+        max?: number;
+        correct?: number;
+        wrong?: number;
+        skipped?: number;
+        couponCode?: string;
+        slab?: { couponPercent?: number };
+        timeTakenSeconds?: number;
+      }>,
+      {
+        examId: string;
+        name: string;
+        phone: string;
+        email?: string;
+        studentCode?: string;
+        timeTakenSeconds?: number;
+        answers: { index: number; value: string | number }[];
+      }
+    >({
+      query: (body) => ({ url: "/public/scholarship/submit", method: "POST", body }),
+    }),
+  }),
+});
+
+export const {
+  useGetCoursesQuery,
+  useGetCourseQuery,
+  useGetCategoriesQuery,
+  useGetStaffQuery,
+  useGetNoticesQuery,
+  useGetGalleryQuery,
+  useGetAlumniQuery,
+  useGetJobsQuery,
+  useGetMarqueeQuery,
+  useGetAdsQuery,
+  useGetPopupsQuery,
+  useGetLinksQuery,
+  useGetLiveQuery,
+  useGetScholarshipQuery,
+  useQuoteFeeMutation,
+  useValidateEnrollmentCodeMutation,
+  useStudentLoginMutation,
+  useStudentLogoutMutation,
+  useGetStudentDashboardQuery,
+  useGetStudentProfileQuery,
+  useGetStudentFeesQuery,
+  useGetStudentAttendanceQuery,
+  useGetStudentNotesQuery,
+  useViewStudentNoteMutation,
+  useGetStudentQuizzesQuery,
+  useGetStudentQuizAttemptsQuery,
+  useStartQuizMutation,
+  useSubmitQuizMutation,
+  useStartTypingMutation,
+  useSubmitTypingMutation,
+  useGetStudentIdCardQuery,
+  useGetStudentReferralsQuery,
+  useCreateReferralMutation,
+  useGetStudentNoticesQuery,
+  useGetStudentNotificationsQuery,
+  useGetStudentLiveQuery,
+  useSavePushTokenMutation,
+  useGetPublicConfigQuery,
+  useStartCheckoutMutation,
+  useVerifyCheckoutMutation,
+  useSubmitScholarshipMutation,
+} = api;

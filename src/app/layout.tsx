@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { I18nProvider } from "@/components/providers/I18nProvider";
+import { ReduxProvider } from "@/components/providers/ReduxProvider";
 import { StudentAuthProvider } from "@/components/providers/StudentAuth";
 import { SiteChrome } from "@/components/site/SiteChrome";
 import { AuroraCursorTrail } from "@/components/site/AuroraCursorTrail";
@@ -38,10 +39,12 @@ export default function RootLayout({
       <body className="relative min-h-full bg-background text-foreground grain">
         <SmoothScrollProvider>
           <I18nProvider>
-            <StudentAuthProvider>
-              <AuroraCursorTrail />
-              <SiteChrome>{children}</SiteChrome>
-            </StudentAuthProvider>
+            <ReduxProvider>
+              <StudentAuthProvider>
+                <AuroraCursorTrail />
+                <SiteChrome>{children}</SiteChrome>
+              </StudentAuthProvider>
+            </ReduxProvider>
           </I18nProvider>
         </SmoothScrollProvider>
       </body>

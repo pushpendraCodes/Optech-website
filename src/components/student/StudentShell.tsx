@@ -21,11 +21,13 @@ import {
   User,
   Users,
   Briefcase,
+  VideoCamera,
   X,
 } from "@phosphor-icons/react";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 import { DEMO_STUDENT, STUDENT_NOTIFICATIONS } from "@/lib/student-data";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useGetStudentDashboardQuery } from "@/lib/api";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
 import type { MessageKey } from "@/lib/i18n";
 
@@ -33,6 +35,7 @@ const NAV: { href: string; label: MessageKey; icon: typeof House }[] = [
   { href: "/student/dashboard", label: "st_dash", icon: House },
   { href: "/student/profile", label: "st_profile", icon: User },
   { href: "/student/courses", label: "st_courses", icon: BookOpen },
+  { href: "/student/live", label: "st_live", icon: VideoCamera },
   { href: "/student/notes", label: "st_notes", icon: Cardholder },
   { href: "/student/quizzes", label: "st_quizzes", icon: Question },
   { href: "/student/typing", label: "st_typing", icon: Keyboard },
@@ -47,12 +50,15 @@ const NAV: { href: string; label: MessageKey; icon: typeof House }[] = [
 ];
 
 export function StudentShell({ children }: { children: React.ReactNode }) {
-  const { ready, studentId, logout } = useStudentAuth();
+  const { ready, studentId, name, logout } = useStudentAuth();
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const unread = STUDENT_NOTIFICATIONS.filter((n) => n.unread).length;
+  const { data: dash } = useGetStudentDashboardQuery(undefined, { skip: !studentId });
+  const unread = Number(dash?.data?.unread ?? STUDENT_NOTIFICATIONS.filter((n) => n.unread).length);
+  const displayName = name || DEMO_STUDENT.name;
+  const displayId = studentId || DEMO_STUDENT.id;
 
   useEffect(() => {
     if (ready && !studentId) router.replace("/student/login");
@@ -129,7 +135,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
               <List size={18} />
             </button>
             <div className="hidden font-sans text-sm text-zinc-400 lg:block">
-              {DEMO_STUDENT.name} · {DEMO_STUDENT.id}
+              {displayName} · {displayId}
             </div>
             <div className="flex items-center gap-2">
               <LanguageSwitcher compact />
