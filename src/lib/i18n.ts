@@ -21,6 +21,7 @@ const en = {
   nav_live: "Live Class",
   nav_scholarship: "Scholarship",
   nav_calculator: "Fee Calculator",
+  nav_typing: "Typing test",
   nav_notices: "Notices",
   nav_contact: "Contact",
   nav_enquire: "Enquire",
@@ -210,6 +211,11 @@ const en = {
   calc_total: "Total",
   calc_per: "Per installment",
   calc_due: "Due {date}",
+  typing_eyebrow: "TYPING TEST // FREE PRACTICE",
+  typing_title: "Check your speed",
+  typing_title_accent: "and accuracy.",
+  typing_desc:
+    "Free English and Hindi typing test — no login required. Results stay on your screen only; nothing is saved to our servers.",
 
   staff_eyebrow: "OUR STAFF // FACULTY & MENTORS",
   staff_title: "People behind your",
@@ -473,6 +479,7 @@ const hi: Record<Keys, string> = {
   nav_live: "लाइव क्लास",
   nav_scholarship: "छात्रवृत्ति",
   nav_calculator: "शुल्क कैलकुलेटर",
+  nav_typing: "टाइपिंग टेस्ट",
   nav_notices: "सूचनाएँ",
   nav_contact: "संपर्क",
   nav_enquire: "पूछताछ",
@@ -654,6 +661,11 @@ const hi: Record<Keys, string> = {
   calc_total: "कुल",
   calc_per: "प्रति किस्त",
   calc_due: "देय {date}",
+  typing_eyebrow: "टाइपिंग टेस्ट // मुफ़्त अभ्यास",
+  typing_title: "अपनी गति",
+  typing_title_accent: "और शुद्धता जाँचें।",
+  typing_desc:
+    "मुफ़्त अंग्रेज़ी और हिंदी टाइपिंग टेस्ट — लॉगिन की ज़रूरत नहीं। परिणाम केवल आपकी स्क्रीन पर दिखते हैं; कुछ भी सेव नहीं होता।",
 
   staff_eyebrow: "हमारा स्टाफ // संकाय और मार्गदर्शक",
   staff_title: "आपकी सफलता के",
@@ -913,6 +925,7 @@ const mr: Record<Keys, string> = {
   nav_live: "लाईव्ह क्लास",
   nav_scholarship: "शिष्यवृत्ती",
   nav_calculator: "फी कॅल्क्युलेटर",
+  nav_typing: "टायपिंग चाचणी",
   nav_notices: "सूचना",
   nav_contact: "संपर्क",
   nav_enquire: "चौकशी",
@@ -1094,6 +1107,11 @@ const mr: Record<Keys, string> = {
   calc_total: "एकूण",
   calc_per: "प्रति हप्ता",
   calc_due: "देय {date}",
+  typing_eyebrow: "टायपिंग चाचणी // मोफत सराव",
+  typing_title: "तुमचा वेग",
+  typing_title_accent: "आणि अचूकता तपासा.",
+  typing_desc:
+    "मोफत इंग्रजी आणि हिंदी टायपिंग चाचणी — लॉगिन नको. निकाल फक्त तुमच्या स्क्रीनवर दिसतात; काहीही सेव्ह होत नाही.",
 
   staff_eyebrow: "आमचा स्टाफ // अध्यापक आणि मार्गदर्शक",
   staff_title: "तुमच्या यशामागचे",

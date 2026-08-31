@@ -2,14 +2,15 @@
 
 import { STUDENT_NOTIFICATIONS } from "@/lib/student-data";
 import { NOTICES } from "@/lib/site-content";
-import { useGetStudentNoticesQuery, useGetStudentNotificationsQuery } from "@/lib/api";
+import { useGetStudentNoticesQuery, useGetStudentNotificationsQuery, useMarkStudentNotificationReadMutation } from "@/lib/api";
 import { loc } from "@/lib/loc";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 
 export default function NotificationsPage() {
   const { studentId } = useStudentAuth();
-  const { data } = useGetStudentNotificationsQuery(undefined, { skip: !studentId });
+  const { data, refetch } = useGetStudentNotificationsQuery(undefined, { skip: !studentId });
   const { data: noticeRes } = useGetStudentNoticesQuery(undefined, { skip: !studentId });
+  const [markRead] = useMarkStudentNotificationReadMutation();
 
   const items = data?.data?.length
     ? data.data.map((row) => {
@@ -37,7 +38,15 @@ export default function NotificationsPage() {
       </p>
       <ul className="mt-6 space-y-3">
         {items.map((item) => (
-          <li key={item.id} className="card-surface p-5">
+          <li
+            key={item.id}
+            className="card-surface cursor-pointer p-5"
+            onClick={() => {
+              if (item.unread) {
+                void markRead(item.id).then(() => void refetch());
+              }
+            }}
+          >
             <div className="flex items-center justify-between gap-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">{item.category}</p>
               <span className="font-mono text-[10px] text-zinc-500">{item.time}</span>

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { useStudentLoginMutation, useStudentLogoutMutation } from "@/lib/api";
 import { clearStudentSession, setStudentSession } from "@/lib/studentAuthSlice";
@@ -19,9 +20,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function StudentAuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
   const session = useSelector((s: RootState) => s.studentAuth);
   const [loginApi] = useStudentLoginMutation();
   const [logoutApi] = useStudentLogoutMutation();
+  const prevToken = useRef<string | null>(session.accessToken);
+
+  useEffect(() => {
+    if (!session.hydrated) return;
+    if (prevToken.current && !session.accessToken && pathname.startsWith("/student") && pathname !== "/student/login") {
+      router.replace("/student/login");
+    }
+    prevToken.current = session.accessToken;
+  }, [session.hydrated, session.accessToken, pathname, router]);
 
   const login = useCallback(
     async (id: string, password: string) => {

@@ -25,6 +25,7 @@ export function Navbar() {
     { href: "/jobs", label: t("nav_jobs") },
     { href: "/scholarship", label: t("nav_scholarship") },
     { href: "/calculator", label: t("nav_calculator") },
+    { href: "/typing", label: t("nav_typing") },
     { href: "/notices", label: t("nav_notices") },
     { href: "/reviews", label: t("review_us") },
   ];

@@ -193,9 +193,17 @@ export const api = createApi({
       query: ({ id, answers }) => ({ url: `/student/quizzes/attempts/${id}/submit`, method: "POST", body: { answers } }),
       invalidatesTags: ["Student"],
     }),
+    getStudentTypingParagraphs: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/typing/paragraphs",
+      providesTags: ["Student"],
+    }),
+    getStudentTypingAttempts: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/typing/attempts",
+      providesTags: ["Student"],
+    }),
     startTyping: build.mutation<
-      ApiSuccess<{ paragraph: { text: string }; minutes: number }>,
-      { language: "en" | "hi"; minutes: number }
+      ApiSuccess<{ paragraph: { _id?: string; text: string }; minutes: number }>,
+      { language: "en" | "hi"; minutes: number; paragraphId?: string }
     >({
       query: (body) => ({ url: "/student/typing/start", method: "POST", body }),
     }),
@@ -204,10 +212,22 @@ export const api = createApi({
       { language: "en" | "hi"; minutes: number; source: string; typed: string }
     >({
       query: (body) => ({ url: "/student/typing/submit", method: "POST", body }),
+      invalidatesTags: ["Student"],
     }),
     getStudentIdCard: build.query<ApiSuccess<Record<string, unknown>>, void>({
       query: () => "/student/id-card",
       providesTags: ["Student"],
+    }),
+    getStudentCertificates: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/certificates",
+      providesTags: ["Student"],
+    }),
+    getStudentCertificatePdf: build.query<ApiSuccess<Record<string, unknown>>, string>({
+      query: (enrollmentId) => `/student/certificates/${enrollmentId}/pdf`,
+    }),
+    markStudentNotificationRead: build.mutation<ApiSuccess<{ read: boolean }>, string>({
+      query: (id) => ({ url: `/student/notifications/${id}/read`, method: "PATCH" }),
+      invalidatesTags: ["Student"],
     }),
     getStudentReferrals: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
       query: () => "/student/referrals",
@@ -319,7 +339,12 @@ export const {
   useSubmitQuizMutation,
   useStartTypingMutation,
   useSubmitTypingMutation,
+  useGetStudentTypingParagraphsQuery,
+  useGetStudentTypingAttemptsQuery,
   useGetStudentIdCardQuery,
+  useGetStudentCertificatesQuery,
+  useLazyGetStudentCertificatePdfQuery,
+  useMarkStudentNotificationReadMutation,
   useGetStudentReferralsQuery,
   useCreateReferralMutation,
   useGetStudentNoticesQuery,

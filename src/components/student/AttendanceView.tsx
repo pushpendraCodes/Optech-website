@@ -333,38 +333,6 @@ export function AttendanceView() {
           </span>
         </div>
       </section>
-
-      <ul className="mt-6 card-surface divide-y divide-white/8">
-        {filtered
-          .slice()
-          .reverse()
-          .map((row) => (
-            <li
-              key={`${row.date}-${row.course}`}
-              className="flex items-center justify-between gap-4 px-5 py-3"
-            >
-              <span className="font-sans text-sm">
-                {new Date(`${row.date}T00:00:00`).toLocaleDateString(localeTag, {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}{" "}
-                · {row.course}
-              </span>
-              <span
-                className={`font-mono text-[11px] uppercase tracking-[0.18em] ${
-                  row.status === "present"
-                    ? "text-emerald-400"
-                    : row.status === "late"
-                      ? "text-accent"
-                      : "text-red-400"
-                }`}
-              >
-                {t(STATUS_LABEL[row.status])}
-              </span>
-            </li>
-          ))}
-      </ul>
     </div>
   );
 }

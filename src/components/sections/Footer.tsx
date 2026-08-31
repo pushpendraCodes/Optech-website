@@ -16,6 +16,7 @@ const navLinks: { key: MessageKey; href: string }[] = [
   { key: "nav_jobs", href: "/jobs" },
   { key: "nav_scholarship", href: "/scholarship" },
   { key: "nav_calculator", href: "/calculator" },
+  { key: "nav_typing", href: "/typing" },
   { key: "nav_videos", href: "/videos" },
   { key: "nav_contact", href: "/contact" },
 ];

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, CheckCircle, DownloadSimple, WarningCircle } from "@phosphor-icons/react";
+import { ArrowUpRight, WarningCircle } from "@phosphor-icons/react";
+import { PaymentReceipt } from "@/components/catalog/PaymentReceipt";
 import { formatInr, getCourse } from "@/lib/catalog";
 import { PageHero } from "@/components/ui/PageHero";
 import { btnGhost, btnPrimary, fieldClass, labelClass } from "@/components/ui/ui";
@@ -253,88 +254,16 @@ export function EnrollFlow({ slug }: { slug: string }) {
     }
   }
 
-  if (pay === "success") {
-    const inv = invoice;
+  if (pay === "success" && invoice) {
     return (
-      <section className="px-6 pb-24 pt-32 md:px-10">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-6 flex items-center gap-3">
-            <CheckCircle size={32} weight="fill" className="text-accent" />
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">Payment successful</p>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight">Invoice generated</h1>
-            </div>
-          </div>
-
-          <article className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-            <div className="flex items-end justify-between bg-[#1a1714] px-6 py-5 md:px-8">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">Optech Computer Institute</p>
-                <p className="mt-1 font-sans text-lg font-semibold text-white">Tax invoice / fee receipt</p>
-              </div>
-              <div className="text-right">
-                <span className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
-                  Paid
-                </span>
-                <p className="mt-2 font-mono text-xs text-zinc-400">{inv?.invoiceNumber ?? "Invoice"}</p>
-                <p className="font-mono text-[10px] text-zinc-500">{inv?.date}</p>
-              </div>
-            </div>
-
-            <div className="grid gap-6 px-6 py-6 md:grid-cols-2 md:px-8">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Bill to</p>
-                <p className="mt-1 font-sans text-sm font-medium">{inv?.payerName || "—"}</p>
-                <p className="text-sm text-zinc-400">{inv?.payerPhone}</p>
-                <p className="text-sm text-zinc-400">{inv?.payerEmail}</p>
-              </div>
-              <div className="md:text-right">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Payment</p>
-                <p className="mt-1 font-sans text-sm capitalize">{inv?.mode || "Razorpay"}</p>
-                {inv?.paymentRef ? <p className="break-all font-mono text-[10px] text-zinc-500">{inv.paymentRef}</p> : null}
-              </div>
-            </div>
-
-            <div className="px-6 md:px-8">
-              <div className="overflow-hidden rounded-2xl border border-white/8">
-                <div className="grid grid-cols-[1fr_auto] bg-white/5 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-                  <span>Description</span>
-                  <span>Amount</span>
-                </div>
-                <div className="grid grid-cols-[1fr_auto] items-center px-4 py-3 text-sm">
-                  <span>{inv?.course || course.title}</span>
-                  <span>{formatInr(inv?.fee ?? quote.fee)}</span>
-                </div>
-                {(inv?.discount ?? 0) > 0 ? (
-                  <div className="grid grid-cols-[1fr_auto] items-center border-t border-white/6 px-4 py-2 text-sm text-zinc-400">
-                    <span>Discount{inv?.coupon ? ` · ${inv.coupon}` : ""}</span>
-                    <span>− {formatInr(inv?.discount ?? 0)}</span>
-                  </div>
-                ) : null}
-                <div className="grid grid-cols-[1fr_auto] items-center border-t border-white/10 bg-accent/10 px-4 py-3 text-sm font-semibold">
-                  <span>Amount paid</span>
-                  <span className="text-accent">{formatInr(inv?.total ?? quote.total)}</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="px-6 py-5 text-sm text-zinc-500 md:px-8">
-              Campus staff will confirm admission and share a student ID. Keep this invoice for your records.
-            </p>
-          </article>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button type="button" className={btnPrimary} disabled={downloading || !inv?.orderId} onClick={() => void downloadInvoice()}>
-              <DownloadSimple size={16} weight="bold" />
-              {downloading ? "Preparing PDF…" : "Download invoice PDF"}
-            </button>
-            <Link href="/courses" className={btnGhost}>
-              Back to courses
-            </Link>
-          </div>
-          {formError ? <p className="mt-3 text-sm text-red-400">{formError}</p> : null}
-        </div>
-      </section>
+      <PaymentReceipt
+        invoice={invoice}
+        courseTitle={course.title}
+        referralCode={appliedReferral || urlReferral || undefined}
+        downloading={downloading}
+        downloadError={formError}
+        onDownload={() => void downloadInvoice()}
+      />
     );
   }
 
