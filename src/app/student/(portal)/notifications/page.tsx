@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { STUDENT_NOTIFICATIONS } from "@/lib/student-data";
-import { NOTICES } from "@/lib/site-content";
-import {
-  useGetStudentNoticesQuery,
-  useGetStudentNotificationsQuery,
-  useMarkStudentNotificationReadMutation,
-  useMarkAllStudentNotificationsReadMutation,
-} from "@/lib/api";
+import { useGetStudentNoticesQuery, useGetStudentNotificationsQuery, useMarkStudentNotificationReadMutation, useMarkAllStudentNotificationsReadMutation } from "@/lib/api";
 import { loc } from "@/lib/loc";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 import {
@@ -45,21 +38,17 @@ export default function NotificationsPage() {
   const totalItems = Number(meta?.totalItems ?? (data?.data?.length || 0));
 
   const rawItems = data?.data;
-  const items = rawItems && rawItems.length > 0
-    ? rawItems.map((row) => {
-        const note = (row.notification as Record<string, unknown> | undefined) ?? {};
-        return {
-          id: String(row._id ?? note._id ?? ""),
-          category: String(note.type ?? "notice"),
-          title: String(note.title ?? ""),
-          body: String(note.body ?? ""),
-          time: row.createdAt ? String(row.createdAt).slice(0, 10) : "",
-          unread: !row.readAt,
-        };
-      })
-    : page === 1
-      ? STUDENT_NOTIFICATIONS
-      : [];
+  const items = (rawItems ?? []).map((row) => {
+    const note = (row.notification as Record<string, unknown> | undefined) ?? {};
+    return {
+      id: String(row._id ?? note._id ?? ""),
+      category: String(note.type ?? "notice"),
+      title: String(note.title ?? ""),
+      body: String(note.body ?? ""),
+      time: row.createdAt ? String(row.createdAt).slice(0, 10) : "",
+      unread: !row.readAt,
+    };
+  });
 
   const unreadCount = items.filter((i) => i.unread).length;
 
@@ -201,11 +190,15 @@ export default function NotificationsPage() {
       <div className="mt-10 rounded-2xl border border-white/8 bg-zinc-950/20 p-5">
         <h2 className="font-sans text-base font-semibold text-foreground">📌 Pinned Institute Notices</h2>
         <ul className="mt-3 space-y-2">
-          {(pinned.length ? pinned : NOTICES.filter((n) => n.pinned)).map((n) => (
-            <li key={n.id} className="font-sans text-sm text-zinc-400">
-              • {n.title}
-            </li>
-          ))}
+          {pinned.length === 0 ? (
+            <li className="font-sans text-sm text-zinc-500">No pinned notices.</li>
+          ) : (
+            pinned.map((n) => (
+              <li key={n.id} className="font-sans text-sm text-zinc-400">
+                • {n.title}
+              </li>
+            ))
+          )}
         </ul>
       </div>
     </div>

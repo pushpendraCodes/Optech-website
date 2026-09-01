@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { PageHero } from "@/components/ui/PageHero";
-import { JOBS } from "@/lib/site-content";
 import { selectClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetJobsQuery } from "@/lib/api";
@@ -14,18 +13,16 @@ export default function JobsPage() {
   const [course, setCourse] = useState("all");
   const [location, setLocation] = useState("all");
   const jobs =
-    data?.data?.length
-      ? data.data.map((job) => ({
-          id: String(job._id ?? job.title),
-          title: String(job.title ?? ""),
-          employer: String(job.employer ?? ""),
-          location: String(job.location ?? ""),
-          course: loc((job.course as { title?: unknown } | undefined)?.title as never),
-          type: String(job.type ?? ""),
-          description: String(job.description ?? ""),
-          contact: String(job.contact ?? ""),
-        }))
-      : JOBS;
+    data?.data?.map((job) => ({
+      id: String(job._id ?? job.title),
+      title: String(job.title ?? ""),
+      employer: String(job.employer ?? ""),
+      location: String(job.location ?? ""),
+      course: loc((job.course as { title?: unknown } | undefined)?.title as never),
+      type: String(job.type ?? ""),
+      description: String(job.description ?? ""),
+      contact: String(job.contact ?? ""),
+    })) ?? [];
   const courses = [...new Set(jobs.map((j) => j.course).filter(Boolean))];
   const locations = [...new Set(jobs.map((j) => j.location))];
   const list = useMemo(
@@ -73,7 +70,10 @@ export default function JobsPage() {
             </select>
           </div>
           <div className="grid gap-5 md:grid-cols-2">
-            {list.map((job) => (
+            {list.length === 0 ? (
+              <p className="font-sans text-sm text-zinc-400 md:col-span-2">No job listings published yet.</p>
+            ) : (
+              list.map((job) => (
               <article key={job.id} className="card-surface flex flex-col gap-4 p-6">
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
@@ -89,7 +89,8 @@ export default function JobsPage() {
                   <span className="text-zinc-200">Contact:</span> {job.contact}
                 </p>
               </article>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

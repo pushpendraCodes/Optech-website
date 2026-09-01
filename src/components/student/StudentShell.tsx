@@ -25,7 +25,6 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
-import { DEMO_STUDENT } from "@/lib/student-data";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetStudentDashboardQuery } from "@/lib/api";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
@@ -67,8 +66,8 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 
   const serverUnread = Number(dash?.data?.unread ?? 0);
   const unread = serverUnread + liveUnread;
-  const displayName = name || DEMO_STUDENT.name;
-  const displayId = studentId || DEMO_STUDENT.id;
+  const displayName = name || "Student";
+  const displayId = studentId || "—";
 
   const handleLivePush = useCallback((n: { title: string; body: string }) => {
     showStudentToast(n.title, n.body);

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
-import { DEMO_STUDENT } from "@/lib/student-data";
 import { btnPrimary, fieldClass, labelClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
@@ -70,7 +69,6 @@ export default function StudentLoginPage() {
             autoComplete="username"
             required
             className={fieldClass}
-            defaultValue={DEMO_STUDENT.id}
           />
         </div>
         <div className="mt-4">
@@ -84,15 +82,11 @@ export default function StudentLoginPage() {
             autoComplete="current-password"
             required
             className={fieldClass}
-            defaultValue={DEMO_STUDENT.password}
           />
         </div>
         <button type="submit" className={`${btnPrimary} mt-6 w-full`}>
           {t("login_enter")}
         </button>
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-600">
-          {t("login_demo")}
-        </p>
       </form>
     </div>
   );

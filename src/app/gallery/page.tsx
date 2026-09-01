@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Play, X } from "@phosphor-icons/react";
 import { PageHero } from "@/components/ui/PageHero";
-import { GALLERY_ALBUMS } from "@/lib/site-content";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetGalleryQuery } from "@/lib/api";
 
@@ -20,7 +19,7 @@ export default function GalleryPage() {
   const { albums, videos } = useMemo(() => {
     if (!data?.data?.length) {
       return {
-        albums: GALLERY_ALBUMS as PhotoAlbum[],
+        albums: [] as PhotoAlbum[],
         videos: [] as VideoItem[],
       };
     }

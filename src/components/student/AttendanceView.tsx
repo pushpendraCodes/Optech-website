@@ -5,8 +5,6 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { selectClass } from "@/components/ui/ui";
 import {
-  ATTENDANCE_LOG,
-  DEMO_STUDENT,
   type AttendanceRow,
   type AttendanceStatus,
 } from "@/lib/student-data";
@@ -73,7 +71,7 @@ export function AttendanceView() {
   const { data: dash } = useGetStudentDashboardQuery(undefined, { skip: !studentId });
 
   const log = useMemo<AttendanceRow[]>(() => {
-    if (!data?.data?.length) return ATTENDANCE_LOG;
+    if (!data?.data?.length) return [];
     return data.data.map((row) => ({
       date: String(row.date ?? "").slice(0, 10),
       course: loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course",
@@ -97,7 +95,7 @@ export function AttendanceView() {
         };
       });
     }
-    return DEMO_STUDENT.courses;
+    return [];
   }, [dash, log]);
 
   const months = useMemo(() => {
@@ -107,7 +105,7 @@ export function AttendanceView() {
 
   const [month, setMonth] = useState("");
   const [course, setCourse] = useState("all");
-  const activeMonth = month && months.includes(month) ? month : (months[months.length - 1] ?? "2026-08");
+  const activeMonth = month && months.includes(month) ? month : (months[months.length - 1] ?? "");
 
   const courses = useMemo(() => [...new Set(log.map((row) => row.course))], [log]);
 

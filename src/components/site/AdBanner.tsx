@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight } from "@phosphor-icons/react";
-import { AD_BANNERS } from "@/lib/site-content";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetAdsQuery } from "@/lib/api";
 
@@ -14,9 +13,6 @@ export function HomeAdBanner() {
   const { data } = useGetAdsQuery();
   const banners = useMemo(() => {
     const rows = (data?.data ?? []).filter((item) => item.slot === "home-between" || !item.slot);
-    if (!rows.length) {
-      return AD_BANNERS.map((item) => ({ ...item, body: item.body, image: "" }));
-    }
     return rows.map((item) => ({
       id: item._id,
       title: item.title,

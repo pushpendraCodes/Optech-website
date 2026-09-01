@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, Clock, XCircle } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { QUIZZES } from "@/lib/student-data";
 import { btnPrimary, btnGhost, fieldClass } from "@/components/ui/ui";
 import { useStartQuizMutation, useSubmitQuizMutation } from "@/lib/api";
 
@@ -59,7 +58,6 @@ function ScoreRing({ value, size = 120 }: { value: number; size?: number }) {
 }
 
 export function QuizRunner({ id }: { id: string }) {
-  const fallback = useMemo(() => QUIZZES.find((q) => q.id === id), [id]);
   const [startQuiz, startState] = useStartQuizMutation();
   const [submitQuiz, submitState] = useSubmitQuizMutation();
   const [live, setLive] = useState<{
@@ -71,7 +69,7 @@ export function QuizRunner({ id }: { id: string }) {
     totalMarks?: number;
     questions: LiveQuestion[];
   } | null>(null);
-  const [seconds, setSeconds] = useState((fallback?.minutes ?? 1) * 60);
+  const [seconds, setSeconds] = useState(60);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [current, setCurrent] = useState(0);
   const [done, setDone] = useState(false);
@@ -95,10 +93,10 @@ export function QuizRunner({ id }: { id: string }) {
         const attempt = body.data.attempt as { _id?: string; startedAt?: string } | undefined;
         const mapped = {
           attemptId: attempt?._id,
-          title: quiz.title || fallback?.title || "Quiz",
-          minutes: Number(quiz.minutes ?? fallback?.minutes ?? 1),
-          passing: Number(quiz.passing ?? fallback?.passing ?? 0),
-          negative: Boolean(quiz.negative ?? fallback?.negative),
+          title: quiz.title || "Quiz",
+          minutes: Number(quiz.minutes ?? 1),
+          passing: Number(quiz.passing ?? 0),
+          negative: Boolean(quiz.negative),
           totalMarks: Number(quiz.totalMarks ?? 0),
           questions: (quiz.questions ?? []).map((q) => ({
             id: q.id,
@@ -116,20 +114,9 @@ export function QuizRunner({ id }: { id: string }) {
     return () => {
       cancelled = true;
     };
-  }, [fallback?.minutes, fallback?.negative, fallback?.passing, fallback?.title, id, startQuiz]);
+  }, [id, startQuiz]);
 
-  const quiz = live?.questions.length
-    ? live
-    : fallback
-      ? {
-          title: fallback.title,
-          minutes: fallback.minutes,
-          passing: fallback.passing,
-          negative: fallback.negative,
-          totalMarks: fallback.questions.length,
-          questions: fallback.questions.map((q) => ({ ...q, q: q.q, marks: 1 })),
-        }
-      : null;
+  const quiz = live?.questions.length ? live : null;
 
   const submit = useCallback(async () => {
     if (!live?.attemptId || !quiz) return;

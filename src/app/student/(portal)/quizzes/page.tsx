@@ -14,7 +14,6 @@ import {
   XCircle,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { QUIZ_HISTORY, QUIZZES } from "@/lib/student-data";
 import { useGetStudentDashboardQuery, useGetStudentQuizAttemptsQuery, useGetStudentQuizzesQuery } from "@/lib/api";
 import { loc } from "@/lib/loc";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
@@ -205,11 +204,8 @@ export default function QuizzesPage() {
   const [search, setSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
 
-  const fromApi = Boolean(data?.data?.length);
-
   const attempts: AttemptItem[] = useMemo(() => {
-    if (attemptsRes?.data?.length) {
-      return attemptsRes.data.map((row) => {
+    return (attemptsRes?.data ?? []).map((row) => {
         const quiz = row.quiz as { _id?: string; title?: string; passing?: number } | undefined;
         const score = Number(row.percent ?? 0);
         const passing = Number(quiz?.passing ?? 60);
@@ -227,17 +223,6 @@ export default function QuizzesPage() {
           status: String(row.status ?? "submitted"),
         };
       });
-    }
-    return QUIZ_HISTORY.map((row) => ({
-      id: row.id,
-      quizId: row.id,
-      title: row.title,
-      date: row.date,
-      score: row.score,
-      passing: 60,
-      passed: row.score >= 60,
-      status: "submitted",
-    }));
   }, [attemptsRes?.data]);
 
   const attemptStats = useMemo(() => {
@@ -254,8 +239,7 @@ export default function QuizzesPage() {
   }, [attempts]);
 
   const quizzes: QuizItem[] = useMemo(() => {
-    if (fromApi) {
-      return (data?.data ?? []).map((row) => {
+    return (data?.data ?? []).map((row) => {
         const id = String(row._id);
         const stats = attemptStats.get(id);
         return {
@@ -273,21 +257,7 @@ export default function QuizzesPage() {
           bestScore: stats?.best,
         };
       });
-    }
-    return QUIZZES.map((quiz) => ({
-      id: quiz.id,
-      title: quiz.title,
-      course: quiz.course,
-      subject: "",
-      minutes: quiz.minutes,
-      passing: quiz.passing,
-      negative: quiz.negative,
-      open: quiz.open,
-      questionCount: quiz.questions.length,
-      totalMarks: quiz.questions.length,
-      attemptCount: 0,
-    }));
-  }, [attemptStats, data?.data, fromApi]);
+  }, [attemptStats, data?.data]);
 
   const enrolledCourses = useMemo(() => {
     const enrollments = (dash?.data?.enrollments as Record<string, unknown>[] | undefined) ?? [];

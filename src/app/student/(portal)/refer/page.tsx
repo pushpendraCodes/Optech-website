@@ -12,7 +12,6 @@ import {
   XCircle,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { DEMO_STUDENT, REFERRALS } from "@/lib/student-data";
 import { useGetStudentProfileQuery, useGetStudentReferralsQuery } from "@/lib/api";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 import { btnGhost } from "@/components/ui/ui";
@@ -70,12 +69,11 @@ export default function ReferPage() {
   const [copiedCode, setCopiedCode] = useState(false);
 
   const code = String(
-    (profileRes?.data as { referralCode?: string } | undefined)?.referralCode || DEMO_STUDENT.referralCode,
+    (profileRes?.data as { referralCode?: string } | undefined)?.referralCode || "—",
   );
 
   const rows: ReferralRow[] = useMemo(() => {
-    if (data?.data?.length) {
-      return data.data.map((row) => {
+    return (data?.data ?? []).map((row) => {
         const referee = row.refereeStudent as
           | { user?: { name?: string; phone?: string }; studentCode?: string }
           | undefined;
@@ -92,16 +90,6 @@ export default function ReferPage() {
           date: formatDate(row.createdAt ? String(row.createdAt) : undefined),
         };
       });
-    }
-    return REFERRALS.map((row, index) => ({
-      id: `demo-${index}`,
-      refereeLabel: row.name,
-      refereePhone: "—",
-      status: row.status,
-      payoutStatus: row.status === "successful" ? ("pending" as const) : ("none" as const),
-      rewardLabel: row.reward,
-      date: "—",
-    }));
   }, [data?.data]);
 
   const stats = useMemo(() => {

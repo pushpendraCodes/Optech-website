@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, X } from "@phosphor-icons/react";
-import { HOME_POPUP, SIDE_ADS } from "@/lib/site-content";
 import { btnPrimary } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetAdsQuery, useGetPopupsQuery } from "@/lib/api";
@@ -34,11 +33,7 @@ export function HomeOverlays() {
         points: [] as string[],
         eyebrow: "Announcement",
       }
-    : {
-        ...HOME_POPUP,
-        image: "",
-        points: [...HOME_POPUP.points],
-      };
+    : null;
 
   const sideAds =
     adsData?.data?.filter((item) => item.slot === "side").map((item) => ({
@@ -50,18 +45,17 @@ export function HomeOverlays() {
       cta: item.cta || "View",
       image: item.image?.url ?? "",
     })) ?? [];
-  const ads = sideAds.length
-    ? sideAds
-    : SIDE_ADS.map((item) => ({ ...item, image: "" }));
+  const ads = sideAds;
   const ad = ads[adIndex] ?? ads[0];
 
   useEffect(() => {
+    if (!popup) return;
     if (!sessionStorage.getItem(MAIN_KEY)) {
       const timer = window.setTimeout(() => setShowMain(true), 700);
       return () => window.clearTimeout(timer);
     }
-    if (!sessionStorage.getItem(SIDE_KEY)) setShowSide(true);
-  }, []);
+    if (!sessionStorage.getItem(SIDE_KEY) && ads.length) setShowSide(true);
+  }, [popup, ads.length]);
 
   useEffect(() => {
     if (!showSide || paused || ads.length < 2) return;
@@ -86,7 +80,7 @@ export function HomeOverlays() {
 
   return (
     <>
-      {showMain ? (
+      {showMain && popup ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 md:p-8">
           <button
             type="button"
@@ -180,7 +174,7 @@ export function HomeOverlays() {
         </div>
       ) : null}
 
-      {showSide ? (
+      {showSide && ad ? (
         <aside
           className="fixed bottom-24 left-4 z-[55] w-[300px] md:left-8"
           onMouseEnter={() => setPaused(true)}

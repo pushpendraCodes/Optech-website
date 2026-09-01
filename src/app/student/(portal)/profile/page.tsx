@@ -20,7 +20,6 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Tx } from "@/components/i18n/Tx";
-import { DEMO_STUDENT } from "@/lib/student-data";
 import { useGetStudentDashboardQuery, useGetStudentProfileQuery } from "@/lib/api";
 import { loc } from "@/lib/loc";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
@@ -77,9 +76,9 @@ export default function ProfilePage() {
     | undefined;
 
   const enrollments = (dash?.data?.enrollments as Record<string, unknown>[] | undefined) ?? [];
-  const displayName = profile?.user?.name || name || DEMO_STUDENT.name;
-  const code = profile?.studentCode || studentId || DEMO_STUDENT.id;
-  const referralCode = profile?.referralCode || DEMO_STUDENT.referralCode;
+  const displayName = profile?.user?.name || name || "Student";
+  const code = profile?.studentCode || studentId || "—";
+  const referralCode = profile?.referralCode || "—";
   const photoUrl = profile?.photo?.url;
 
   const initials = displayName
@@ -191,12 +190,12 @@ export default function ProfilePage() {
           <section className="mt-8">
             <h3 className="mb-4 font-sans text-lg font-semibold">Contact & personal</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              <InfoTile icon={EnvelopeSimple} label="Email" value={profile?.user?.email || DEMO_STUDENT.email} />
-              <InfoTile icon={Phone} label="Phone" value={profile?.user?.phone || DEMO_STUDENT.phone} mono />
+              <InfoTile icon={EnvelopeSimple} label="Email" value={profile?.user?.email || ""} />
+              <InfoTile icon={Phone} label="Phone" value={profile?.user?.phone || ""} mono />
               <InfoTile
                 icon={Phone}
                 label="Parent phone"
-                value={profile?.parentPhone || DEMO_STUDENT.parentPhone}
+                value={profile?.parentPhone || ""}
                 mono
               />
               <InfoTile icon={CalendarBlank} label="Date of birth" value={formatDate(profile?.dob)} />
@@ -312,7 +311,7 @@ export default function ProfilePage() {
                   <Tx k="st_field_roll" />
                 </dt>
                 <dd className="mt-1 font-mono text-sm text-zinc-300">
-                  {profile?.rollNumber || DEMO_STUDENT.roll}
+                  {profile?.rollNumber || "—"}
                 </dd>
               </div>
             </dl>

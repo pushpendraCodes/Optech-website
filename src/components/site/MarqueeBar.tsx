@@ -1,19 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { MARQUEE_ITEMS } from "@/lib/site-content";
 import { useGetMarqueeQuery } from "@/lib/api";
 
 export function MarqueeBar() {
   const { data } = useGetMarqueeQuery();
-  const items =
-    data?.data?.length
-      ? data.data.map((item) => ({
-          id: item._id,
-          text: item.title,
-          href: item.href || "/courses",
-        }))
-      : MARQUEE_ITEMS;
+  const items = (data?.data ?? []).map((item) => ({
+    id: item._id,
+    text: item.title,
+    href: item.href || "/courses",
+  }));
+
+  if (!items.length) return null;
+
   const loop = [...items, ...items];
 
   return (

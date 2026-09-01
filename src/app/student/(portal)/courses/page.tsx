@@ -16,7 +16,6 @@ import {
   Certificate,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { DEMO_STUDENT } from "@/lib/student-data";
 import { useGetStudentDashboardQuery } from "@/lib/api";
 import { loc } from "@/lib/loc";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
@@ -216,36 +215,23 @@ export default function StudentCoursesPage() {
   const enrollments = (data?.data?.enrollments as Record<string, unknown>[] | undefined) ?? [];
 
   const courses: CourseItem[] = useMemo(() => {
-    if (enrollments.length) {
-      return enrollments.map((row) => {
-        const course = row.course as
-          | { title?: unknown; slug?: string; duration?: string; mode?: string }
-          | undefined;
-        const batch = row.batch as { timing?: string; label?: string } | undefined;
-        return {
-          id: String(row._id ?? course?.slug ?? "course"),
-          slug: course?.slug || String(row._id),
-          title: loc(course?.title as never) || "Course",
-          progress: Number(row.progress ?? 0),
-          attendance: attendancePct,
-          batchLabel: batch?.label || "",
-          batchTiming: batch?.timing || "",
-          duration: course?.duration || "",
-          mode: course?.mode || "",
-        };
-      });
-    }
-    return DEMO_STUDENT.courses.map((c) => ({
-      id: c.slug,
-      slug: c.slug,
-      title: c.title,
-      progress: c.progress,
-      attendance: c.attendance,
-      batchLabel: "",
-      batchTiming: c.nextClass,
-      duration: "",
-      mode: "",
-    }));
+    return enrollments.map((row) => {
+      const course = row.course as
+        | { title?: unknown; slug?: string; duration?: string; mode?: string }
+        | undefined;
+      const batch = row.batch as { timing?: string; label?: string } | undefined;
+      return {
+        id: String(row._id ?? course?.slug ?? "course"),
+        slug: course?.slug || String(row._id),
+        title: loc(course?.title as never) || "Course",
+        progress: Number(row.progress ?? 0),
+        attendance: attendancePct,
+        batchLabel: batch?.label || "",
+        batchTiming: batch?.timing || "",
+        duration: course?.duration || "",
+        mode: course?.mode || "",
+      };
+    });
   }, [enrollments, attendancePct]);
 
   const filtered = useMemo(() => {

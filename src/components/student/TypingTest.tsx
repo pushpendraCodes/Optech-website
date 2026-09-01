@@ -11,8 +11,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { TYPING_HISTORY, TYPING_PASSAGES } from "@/lib/student-data";
-import { PUBLIC_TYPING_PASSAGES, wpmLabel, type TypingLang } from "@/lib/typing-passages";
+import { wpmLabel, type TypingLang } from "@/lib/typing-passages";
 import { btnGhost, btnPrimary, fieldClass } from "@/components/ui/ui";
 import {
   useGetStudentTypingAttemptsQuery,
@@ -103,32 +102,6 @@ function PassageView({ passage, typed }: { passage: string; typed: string }) {
   );
 }
 
-function fallbackParagraphs(): TypingTestItem[] {
-  const items: TypingTestItem[] = [];
-  (["en", "hi"] as LangCode[]).forEach((language) => {
-    const uiLang = LANG_META[language].uiLang;
-    const list =
-      language === "en"
-        ? PUBLIC_TYPING_PASSAGES.english.length
-          ? PUBLIC_TYPING_PASSAGES.english
-          : [TYPING_PASSAGES.english]
-        : PUBLIC_TYPING_PASSAGES.hindi.length
-          ? PUBLIC_TYPING_PASSAGES.hindi
-          : [TYPING_PASSAGES.hindi];
-    list.forEach((text, index) => {
-      items.push({
-        id: `fallback-${language}-${index}`,
-        language,
-        text,
-        preview: previewText(text),
-        wordCount: wordCount(text),
-        fromApi: false,
-      });
-    });
-  });
-  return items;
-}
-
 export function TypingTest() {
   const { studentId } = useStudentAuth();
   const { data: paraRes, isLoading: paraLoading } = useGetStudentTypingParagraphsQuery(undefined, {
@@ -150,21 +123,18 @@ export function TypingTest() {
 
   const tests: TypingTestItem[] = useMemo(() => {
     const rows = paraRes?.data ?? [];
-    if (rows.length) {
-      return rows.map((row) => {
-        const text = String(row.text ?? "");
-        const language = (String(row.language ?? "en") === "hi" ? "hi" : "en") as LangCode;
-        return {
-          id: String(row._id),
-          language,
-          text,
-          preview: previewText(text),
-          wordCount: wordCount(text),
-          fromApi: true,
-        };
-      });
-    }
-    return fallbackParagraphs();
+    return rows.map((row) => {
+      const text = String(row.text ?? "");
+      const language = (String(row.language ?? "en") === "hi" ? "hi" : "en") as LangCode;
+      return {
+        id: String(row._id),
+        language,
+        text,
+        preview: previewText(text),
+        wordCount: wordCount(text),
+        fromApi: true,
+      };
+    });
   }, [paraRes?.data]);
 
   const languages = useMemo(() => {
@@ -184,25 +154,14 @@ export function TypingTest() {
   );
 
   const history = useMemo(() => {
-    if (historyRes?.data?.length) {
-      return historyRes.data.map((row) => ({
-        id: String(row._id),
-        lang: String(row.language ?? "en") === "hi" ? "Hindi" : "English",
-        wpm: Number(row.wpm ?? 0),
-        accuracy: Number(row.accuracy ?? 0),
-        errors: Number(row.errorCount ?? 0),
-        minutes: Number(row.minutes ?? 0),
-        date: formatDate(row.createdAt ? String(row.createdAt) : undefined),
-      }));
-    }
-    return TYPING_HISTORY.map((row) => ({
-      id: `${row.date}-${row.lang}`,
-      lang: row.lang,
-      wpm: row.wpm,
-      accuracy: row.accuracy,
-      errors: row.errors,
-      minutes: row.minutes,
-      date: row.date,
+    return (historyRes?.data ?? []).map((row) => ({
+      id: String(row._id),
+      lang: String(row.language ?? "en") === "hi" ? "Hindi" : "English",
+      wpm: Number(row.wpm ?? 0),
+      accuracy: Number(row.accuracy ?? 0),
+      errors: Number(row.errorCount ?? 0),
+      minutes: Number(row.minutes ?? 0),
+      date: formatDate(row.createdAt ? String(row.createdAt) : undefined),
     }));
   }, [historyRes?.data]);
 

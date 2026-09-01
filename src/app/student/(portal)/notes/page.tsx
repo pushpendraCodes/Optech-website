@@ -13,7 +13,6 @@ import {
   VideoCamera,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { NOTES, DEMO_STUDENT } from "@/lib/student-data";
 import {
   useGetStudentDashboardQuery,
   useGetStudentNotesQuery,
@@ -109,11 +108,9 @@ function TypeBadge({ type }: { type: NoteType }) {
 function NoteRow({
   note,
   onOpen,
-  fromApi,
 }: {
   note: NoteItem;
   onOpen: () => void;
-  fromApi: boolean;
 }) {
   const meta = TYPE_META[note.type];
   const canOpen = Boolean(note.href);
@@ -134,7 +131,7 @@ function NoteRow({
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
-            if (fromApi) onOpen();
+            onOpen();
           }}
           className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-accent transition hover:border-accent/30 hover:bg-accent/10"
         >
@@ -157,22 +154,9 @@ export default function NotesPage() {
   const [courseFilter, setCourseFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState<NoteType | "all">("all");
 
-  const fromApi = Boolean(data?.data?.length);
-  const allowed = new Set<string>(DEMO_STUDENT.courses.map((c) => c.title));
-
   const notes: NoteItem[] = useMemo(() => {
-    if (fromApi) return (data?.data ?? []).map((row) => mapApiNote(row as Record<string, unknown>));
-    return NOTES.filter((n) => allowed.has(n.course)).map((n) => ({
-      id: n.id,
-      course: n.course,
-      courseSlug: "",
-      chapter: n.chapter,
-      title: n.title,
-      type: normalizeType(n.type),
-      views: n.views,
-      href: "",
-    }));
-  }, [allowed, data?.data, fromApi]);
+    return (data?.data ?? []).map((row) => mapApiNote(row as Record<string, unknown>));
+  }, [data?.data]);
 
   const enrolledCourses = useMemo(() => {
     const enrollments = (dash?.data?.enrollments as Record<string, unknown>[] | undefined) ?? [];
@@ -183,8 +167,8 @@ export default function NotesPage() {
         return loc(course?.title as never) || "Course";
       });
     }
-    return fromNotes.length ? fromNotes : [...allowed];
-  }, [allowed, dash?.data?.enrollments, notes]);
+    return fromNotes;
+  }, [dash?.data?.enrollments, notes]);
 
   const typeCounts = useMemo(() => {
     const counts: Record<NoteType, number> = { pdf: 0, doc: 0, video: 0, link: 0 };
@@ -389,7 +373,6 @@ export default function NotesPage() {
                       <NoteRow
                         key={note.id}
                         note={note}
-                        fromApi={fromApi}
                         onOpen={() => void viewNote(note.id)}
                       />
                     ))}

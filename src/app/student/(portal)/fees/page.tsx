@@ -11,7 +11,6 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { FEE_HISTORY } from "@/lib/student-data";
 import { formatInr } from "@/lib/catalog";
 import { useGetStudentFeesQuery } from "@/lib/api";
 import { loc } from "@/lib/loc";
@@ -187,11 +186,10 @@ export default function FeesPage() {
     | undefined;
 
   const summary = payload?.summary;
-  const fromApi = Boolean(payload?.courses?.length || payload?.payments?.length);
 
   const courses: CourseFee[] = useMemo(() => {
-    if (payload?.courses?.length) {
-      return payload.courses.map((row) => ({
+    if (!payload?.courses?.length) return [];
+    return payload.courses.map((row) => ({
         enrollmentId: String(row.enrollmentId ?? ""),
         title: loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course",
         feePlan: String(row.feePlan ?? "full"),
@@ -209,41 +207,11 @@ export default function FeesPage() {
           status: String(inst.status ?? "due"),
         })),
       }));
-    }
-    const byCourse = new Map<string, CourseFee>();
-    for (const row of FEE_HISTORY) {
-      const existing = byCourse.get(row.course);
-      if (!existing) {
-        byCourse.set(row.course, {
-          enrollmentId: row.course,
-          title: row.course,
-          feePlan: row.mode.includes("Installment") ? "installment" : "full",
-          listFee: row.amount,
-          discount: 0,
-          agreedFee: row.amount,
-          paid: row.status === "paid" ? row.amount : 0,
-          due: row.status === "due" ? row.amount : 0,
-          installments: [],
-        });
-      } else if (row.status === "paid") {
-        existing.paid += row.amount;
-      } else {
-        existing.due += row.amount;
-        existing.installments.push({
-          id: row.id,
-          sequence: existing.installments.length + 1,
-          amount: row.amount,
-          dueDate: row.date,
-          status: "due",
-        });
-      }
-    }
-    return [...byCourse.values()];
   }, [payload?.courses]);
 
   const payments: PaymentRow[] = useMemo(() => {
-    if (payload?.payments?.length) {
-      return payload.payments.map((row) => ({
+    if (!payload?.payments?.length) return [];
+    return payload.payments.map((row) => ({
         id: String(row.id ?? row._id ?? ""),
         course: loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course",
         amount: Number(row.amount ?? 0),
@@ -253,16 +221,6 @@ export default function FeesPage() {
         mode: String(row.mode ?? "online"),
         date: formatDate(row.createdAt ? String(row.createdAt) : undefined),
       }));
-    }
-    return FEE_HISTORY.filter((r) => r.status === "paid").map((row) => ({
-      id: row.id,
-      course: row.course,
-      amount: row.amount,
-      listFee: row.amount,
-      discount: 0,
-      mode: row.mode,
-      date: row.date,
-    }));
   }, [payload?.payments]);
 
   const totalDue = summary?.totalDue ?? payload?.remaining ?? courses.reduce((s, c) => s + c.due, 0);
@@ -423,10 +381,6 @@ export default function FeesPage() {
               </div>
             </section>
           )}
-
-          {!fromApi ? (
-            <p className="mt-6 text-center text-xs text-zinc-600">Showing demo data — connect API for live fees.</p>
-          ) : null}
         </>
       )}
     </div>

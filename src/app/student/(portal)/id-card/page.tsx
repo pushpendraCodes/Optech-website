@@ -2,7 +2,6 @@
 
 import { DownloadSimple } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { DEMO_STUDENT } from "@/lib/student-data";
 import { btnGhost } from "@/components/ui/ui";
 import { useGetStudentIdCardQuery, useGetStudentProfileQuery } from "@/lib/api";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
@@ -97,10 +96,10 @@ export default function IdCardPage() {
     | undefined;
 
   const card: IdCardData = {
-    name: api?.name || profile?.user?.name || name || DEMO_STUDENT.name,
-    mobile: api?.mobile || profile?.user?.phone || DEMO_STUDENT.phone,
-    studentCode: api?.studentCode || profile?.studentCode || studentId || DEMO_STUDENT.id,
-    address: api?.address || profile?.address || "Deori, Maharashtra",
+    name: api?.name || profile?.user?.name || name || "Student",
+    mobile: api?.mobile || profile?.user?.phone || "",
+    studentCode: api?.studentCode || profile?.studentCode || studentId || "—",
+    address: api?.address || profile?.address || "",
     photoUrl: api?.photoUrl || profile?.photo?.url,
     pdf: api?.pdf,
   };
