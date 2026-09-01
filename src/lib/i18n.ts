@@ -230,8 +230,10 @@ const en = {
   videos_eyebrow: "VIDEOS // COURSE LECTURES",
   videos_title: "Learn from our",
   videos_title_accent: "YouTube library.",
-  videos_desc: "Institute highlights and course lectures. Add a YouTube video ID in the site data to publish each embed.",
+  videos_desc: "Institute highlights and course lectures from our YouTube channel.",
   videos_pending: "YouTube upload pending",
+  videos_empty: "No videos published yet. Check back soon.",
+  videos_error: "Could not load videos. Please try again later.",
   videos_foot: "New lectures are added regularly — check back for the latest uploads.",
 
   gallery_eyebrow: "GALLERY // CAMPUS LIFE",
@@ -685,6 +687,8 @@ const hi: Record<Keys, string> = {
   videos_title_accent: "यूट्यूब लाइब्रेरी से सीखें।",
   videos_desc: "संस्थान झलकियाँ और व्याख्यान।",
   videos_pending: "यूट्यूब अपलोड बाकी",
+  videos_empty: "अभी कोई वीडियो प्रकाशित नहीं है। जल्द ही देखें।",
+  videos_error: "वीडियो लोड नहीं हो सके। कृपया बाद में पुनः प्रयास करें।",
   videos_foot: "नए व्याख्यान नियमित जुड़ते हैं — नवीनतम के लिए फिर आएँ।",
 
   gallery_eyebrow: "गैलरी // कैंपस जीवन",
@@ -1133,6 +1137,8 @@ const mr: Record<Keys, string> = {
   videos_title_accent: "युट्युब लायब्ररीतून शिका.",
   videos_desc: "संस्था झलक आणि व्याख्याने.",
   videos_pending: "युट्युब अपलोड बाकी",
+  videos_empty: "अद्याप कोणतेही व्हिडिओ प्रकाशित नाहीत. लवकरच पुन्हा तपासा.",
+  videos_error: "व्हिडिओ लोड होऊ शकले नाहीत. कृपया नंतर पुन्हा प्रयत्न करा.",
   videos_foot: "नवीन व्याख्याने नियमित येतात — नंतर पुन्हा पहा.",
 
   gallery_eyebrow: "गॅलरी // कॅम्पस जीवन",

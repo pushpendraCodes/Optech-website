@@ -232,64 +232,6 @@ export const STAFF = [
   },
 ] as const;
 
-/** Add a YouTube video ID to publish it on the Videos page. */
-export const VIDEOS = [
-  {
-    id: "vision-2024",
-    title: "The Future of Tech Education: Optech 2024 Vision",
-    category: "Institute Highlight",
-    duration: "12 mins",
-    views: "Featured",
-    youtubeId: "",
-    body: "Explore curriculum updates featuring AI integration, advanced programming, and industry-partnered projects.",
-  },
-  {
-    id: "js-patterns",
-    title: "Advanced JavaScript Patterns",
-    category: "Programming & Software",
-    duration: "15 mins",
-    views: "12k views",
-    youtubeId: "",
-    body: "Modern JS techniques used in professional web development projects.",
-  },
-  {
-    id: "digital-strategy",
-    title: "Digital Strategy Foundations",
-    category: "Digital Marketing",
-    duration: "22 mins",
-    views: "8.5k views",
-    youtubeId: "",
-    body: "Foundations of SEO, content, and growth strategy for local businesses.",
-  },
-  {
-    id: "tally-prime",
-    title: "Mastering Tally Prime 2024",
-    category: "Accounts",
-    duration: "45 mins",
-    views: "5.2k views",
-    youtubeId: "",
-    body: "Walkthrough of GST-ready accounting workflows in Tally Prime.",
-  },
-  {
-    id: "python-backend",
-    title: "Python for Backend Development",
-    category: "Programming & Software",
-    duration: "18 mins",
-    views: "Trending",
-    youtubeId: "",
-    body: "Build robust APIs and server-side logic using modern Python frameworks.",
-  },
-  {
-    id: "react-tailwind",
-    title: "Modern UI with React & Tailwind",
-    category: "Programming & Software",
-    duration: "12 mins",
-    views: "Trending",
-    youtubeId: "",
-    body: "Building responsive interfaces using the latest web technologies.",
-  },
-] as const;
-
 export const ENQUIRY_COURSES = [
   "PGDCA",
   "DCA",

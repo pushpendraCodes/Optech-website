@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Play, X } from "@phosphor-icons/react";
 import { PageHero } from "@/components/ui/PageHero";
 import { GALLERY_ALBUMS } from "@/lib/site-content";
-import { VIDEOS } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetGalleryQuery } from "@/lib/api";
 
@@ -22,13 +21,7 @@ export default function GalleryPage() {
     if (!data?.data?.length) {
       return {
         albums: GALLERY_ALBUMS as PhotoAlbum[],
-        videos: VIDEOS.map((v) => ({
-          id: v.id,
-          title: v.title,
-          kind: "video" as const,
-          category: v.category,
-          youtubeId: v.youtubeId || "",
-        })),
+        videos: [] as VideoItem[],
       };
     }
     const photoAlbums: PhotoAlbum[] = [];

@@ -99,6 +99,10 @@ export const api = createApi({
       query: () => "/public/jobs",
       providesTags: ["Public"],
     }),
+    getVideos: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/public/videos",
+      providesTags: ["Public"],
+    }),
     getMarquee: build.query<ApiSuccess<CmsItem[]>, void>({
       query: () => "/public/marquee",
       providesTags: ["Public"],
@@ -340,6 +344,7 @@ export const {
   useGetGalleryQuery,
   useGetAlumniQuery,
   useGetJobsQuery,
+  useGetVideosQuery,
   useGetMarqueeQuery,
   useGetAdsQuery,
   useGetPopupsQuery,

@@ -1,6 +1,6 @@
 export const DEMO_STUDENT = {
   id: "OPT-2024-1847",
-  password: "optech1847",
+  password: "bhhw10tqdaA1",
   name: "Aarav Kulkarni",
   photoInitials: "AK",
   email: "aarav.k@example.com",

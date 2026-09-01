@@ -1,28 +1,28 @@
-import type { Metadata } from "next";
-import { Play } from "@phosphor-icons/react/dist/ssr";
+"use client";
+
+import { Play } from "@phosphor-icons/react";
 import { PageHero } from "@/components/ui/PageHero";
 import { Tx } from "@/components/i18n/Tx";
-import { VIDEOS } from "@/lib/optech";
+import { useGetVideosQuery } from "@/lib/api";
 
-export const metadata: Metadata = {
-  title: "Videos",
-  description:
-    "Watch course lectures and institute highlights from Optech Computer Institute, Deori. YouTube lessons uploaded regularly.",
+type VideoItem = {
+  id: string;
+  title: string;
+  category: string;
+  body: string;
+  youtubeId: string;
+  featured?: boolean;
 };
 
 function VideoCard({
   title,
   category,
-  duration,
-  views,
   body,
   youtubeId,
   featured = false,
 }: {
   title: string;
   category: string;
-  duration: string;
-  views: string;
   body: string;
   youtubeId: string;
   featured?: boolean;
@@ -62,14 +62,11 @@ function VideoCard({
         )}
       </div>
       <div className="flex flex-col gap-3 p-5 md:p-6">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        {category ? (
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">
             {category}
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-            {duration} · {views}
-          </span>
-        </div>
+        ) : null}
         <h2
           className={`font-sans font-semibold tracking-tight text-foreground ${
             featured ? "text-2xl md:text-3xl" : "text-lg"
@@ -77,14 +74,30 @@ function VideoCard({
         >
           {title}
         </h2>
-        <p className="font-sans text-sm leading-relaxed text-zinc-400">{body}</p>
+        {body ? (
+          <p className="font-sans text-sm leading-relaxed text-zinc-400">{body}</p>
+        ) : null}
       </div>
     </article>
   );
 }
 
+function mapApiVideos(rows: Record<string, unknown>[]): VideoItem[] {
+  return rows.map((row) => ({
+    id: String(row._id ?? row.youtubeId ?? row.title),
+    title: String(row.title ?? ""),
+    category: String(row.category ?? ""),
+    body: String(row.description ?? ""),
+    youtubeId: String(row.youtubeId ?? ""),
+    featured: Boolean(row.featured),
+  }));
+}
+
 export default function VideosPage() {
-  const [featured, ...rest] = VIDEOS;
+  const { data, isLoading, isError } = useGetVideosQuery();
+  const videos = data?.data?.length ? mapApiVideos(data.data) : [];
+  const featured = videos.find((video) => video.featured) ?? videos[0];
+  const rest = featured ? videos.filter((video) => video.id !== featured.id) : [];
 
   return (
     <>
@@ -96,31 +109,53 @@ export default function VideosPage() {
       />
 
       <section className="px-6 py-16 md:px-10 md:py-24">
-        <div className="mx-auto grid max-w-[1400px] gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {featured && (
-            <VideoCard
-              key={featured.id}
-              featured
-              title={featured.title}
-              category={featured.category}
-              duration={featured.duration}
-              views={featured.views}
-              body={featured.body}
-              youtubeId={featured.youtubeId}
-            />
-          )}
-          {rest.map((video) => (
-            <VideoCard
-              key={video.id}
-              title={video.title}
-              category={video.category}
-              duration={video.duration}
-              views={video.views}
-              body={video.body}
-              youtubeId={video.youtubeId}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="mx-auto grid max-w-[1400px] gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="card-surface animate-pulse overflow-hidden"
+              >
+                <div className="aspect-video bg-white/5" />
+                <div className="space-y-3 p-5 md:p-6">
+                  <div className="h-3 w-24 rounded bg-white/10" />
+                  <div className="h-5 w-3/4 rounded bg-white/10" />
+                  <div className="h-4 w-full rounded bg-white/5" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <p className="mx-auto max-w-[1400px] text-center font-sans text-sm text-zinc-400">
+            <Tx k="videos_error" />
+          </p>
+        ) : videos.length === 0 ? (
+          <p className="mx-auto max-w-[1400px] text-center font-sans text-sm text-zinc-400">
+            <Tx k="videos_empty" />
+          </p>
+        ) : (
+          <div className="mx-auto grid max-w-[1400px] gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {featured ? (
+              <VideoCard
+                key={featured.id}
+                featured
+                title={featured.title}
+                category={featured.category}
+                body={featured.body}
+                youtubeId={featured.youtubeId}
+              />
+            ) : null}
+            {rest.map((video) => (
+              <VideoCard
+                key={video.id}
+                title={video.title}
+                category={video.category}
+                body={video.body}
+                youtubeId={video.youtubeId}
+              />
+            ))}
+          </div>
+        )}
 
         <p className="mx-auto mt-10 max-w-[1400px] font-mono text-[11px] uppercase tracking-[0.22em] text-zinc-500">
           <Tx k="videos_foot" />
