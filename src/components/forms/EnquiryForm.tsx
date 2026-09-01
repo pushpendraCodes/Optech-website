@@ -4,15 +4,18 @@ import { FormEvent, useState } from "react";
 import { ArrowUpRight, CheckCircle } from "@phosphor-icons/react";
 import { ENQUIRY_COURSES, INSTITUTE } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSubmitEnquiryMutation } from "@/lib/api";
 import { fieldClass, labelClass, selectClass } from "@/components/ui/ui";
 
 export function EnquiryForm() {
   const { t } = useI18n();
   const [submitted, setSubmitted] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitEnquiry, { isLoading }] = useSubmitEnquiryMutation();
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     const form = e.currentTarget;
     const data = new FormData(form);
     const name = String(data.get("name") || "").trim();
@@ -21,28 +24,17 @@ export function EnquiryForm() {
     const course = String(data.get("course") || "").trim();
     const message = String(data.get("message") || "").trim();
 
-    setSending(true);
-
-    const subject = encodeURIComponent(`Enquiry — ${course || "General"} — ${name}`);
-    const body = encodeURIComponent(
-      [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Phone: ${phone}`,
-        `Course Interest: ${course}`,
-        "",
-        "Message:",
-        message,
-      ].join("\n"),
-    );
-
-    window.location.href = `mailto:${INSTITUTE.email}?subject=${subject}&body=${body}`;
-
-    window.setTimeout(() => {
-      setSending(false);
+    try {
+      await submitEnquiry({ name, email, phone, course, message: message || undefined }).unwrap();
       setSubmitted(true);
       form.reset();
-    }, 400);
+    } catch (err) {
+      const messageText =
+        err && typeof err === "object" && "data" in err
+          ? String((err as { data?: { message?: string } }).data?.message || "")
+          : "";
+      setError(messageText || t("form_error"));
+    }
   };
 
   if (submitted) {
@@ -53,7 +45,7 @@ export function EnquiryForm() {
           {t("form_thanks")}
         </h3>
         <p className="max-w-[40ch] font-sans text-sm leading-relaxed text-zinc-400">
-          {t("form_thanks_body", { email: INSTITUTE.email, phone: INSTITUTE.phone })}
+          {t("form_thanks_saved", { email: INSTITUTE.email, phone: INSTITUTE.phone })}
         </p>
         <button
           type="button"
@@ -80,6 +72,12 @@ export function EnquiryForm() {
           {t("form_lead")}
         </p>
       </div>
+
+      {error ? (
+        <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 font-sans text-sm text-red-300">
+          {error}
+        </p>
+      ) : null}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
@@ -113,24 +111,24 @@ export function EnquiryForm() {
 
       <div>
         <label htmlFor="email" className={labelClass}>
-            {t("form_email")}
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder={t("form_ph_email")}
+          {t("form_email")}
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder={t("form_ph_email")}
           className={fieldClass}
         />
       </div>
 
       <div>
         <label htmlFor="course" className={labelClass}>
-            {t("form_course")}
-          </label>
-          <select id="course" name="course" required defaultValue="" className={selectClass}>
+          {t("form_course")}
+        </label>
+        <select id="course" name="course" required defaultValue="" className={selectClass}>
           <option value="" disabled>
             {t("form_select")}
           </option>
@@ -144,24 +142,24 @@ export function EnquiryForm() {
 
       <div>
         <label htmlFor="message" className={labelClass}>
-            {t("form_message")}
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows={4}
-            maxLength={500}
-            placeholder={t("form_ph_msg")}
+          {t("form_message")}
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          rows={4}
+          maxLength={500}
+          placeholder={t("form_ph_msg")}
           className={`${fieldClass} resize-y`}
         />
       </div>
 
       <button
         type="submit"
-        disabled={sending}
+        disabled={isLoading}
         className="group inline-flex items-center justify-center gap-2 self-start rounded-full border border-accent/40 bg-accent/15 px-6 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-accent transition-all duration-200 hover:bg-accent/25 disabled:opacity-60"
       >
-        {sending ? t("form_sending") : t("form_submit")}
+        {isLoading ? t("form_sending") : t("form_submit")}
         <ArrowUpRight
           size={14}
           weight="bold"

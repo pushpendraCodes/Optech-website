@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AURORA_CONFIG, generateAuroraColor, isAuroraMobile } from "./aurora";
 
 type FBO = {

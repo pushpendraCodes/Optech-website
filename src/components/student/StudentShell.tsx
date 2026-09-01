@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   Bell,
@@ -25,11 +25,13 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
-import { DEMO_STUDENT, STUDENT_NOTIFICATIONS } from "@/lib/student-data";
+import { DEMO_STUDENT } from "@/lib/student-data";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetStudentDashboardQuery } from "@/lib/api";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
 import { StudentPushSetup } from "@/components/student/StudentPushSetup";
+import { StudentNotificationToast, showStudentToast } from "@/components/student/StudentNotificationToast";
+import { useLivePush } from "@/hooks/useLivePush";
 import type { MessageKey } from "@/lib/i18n";
 
 const NAV: { href: string; label: MessageKey; icon: typeof House }[] = [
@@ -56,10 +58,25 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const { data: dash } = useGetStudentDashboardQuery(undefined, { skip: !studentId });
-  const unread = Number(dash?.data?.unread ?? STUDENT_NOTIFICATIONS.filter((n) => n.unread).length);
+  const [liveUnread, setLiveUnread] = useState(0);
+
+  const { data: dash, refetch: refetchDash } = useGetStudentDashboardQuery(undefined, {
+    skip: !studentId,
+    pollingInterval: 5000,
+  });
+
+  const serverUnread = Number(dash?.data?.unread ?? 0);
+  const unread = serverUnread + liveUnread;
   const displayName = name || DEMO_STUDENT.name;
   const displayId = studentId || DEMO_STUDENT.id;
+
+  const handleLivePush = useCallback((n: { title: string; body: string }) => {
+    showStudentToast(n.title, n.body);
+    setLiveUnread((c) => c + 1);
+    void refetchDash();
+  }, [refetchDash]);
+
+  useLivePush(Boolean(studentId), handleLivePush);
 
   useEffect(() => {
     if (ready && !studentId) router.replace("/student/login");
@@ -104,26 +121,26 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-            {NAV.map((item) => {
-              const Icon = item.icon;
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 ${
-                    active
-                      ? "bg-accent/15 text-accent"
-                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-foreground"
-                  }`}
-                >
-                  <Icon size={16} aria-hidden />
-                  {t(item.label)}
-                </Link>
-              );
-            })}
-          </nav>
+          {NAV.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 ${
+                  active
+                    ? "bg-accent/15 text-accent"
+                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-foreground"
+                }`}
+              >
+                <Icon size={16} aria-hidden />
+                {t(item.label)}
+              </Link>
+            );
+          })}
+        </nav>
         <Link
           href="/"
           onClick={() => setOpen(false)}
@@ -136,52 +153,56 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex h-dvh min-w-0 flex-col lg:pl-64">
         <header className="z-30 flex shrink-0 items-center justify-between border-b border-white/8 bg-black/50 px-4 py-3 backdrop-blur-xl">
+          <button
+            type="button"
+            className="cursor-pointer rounded-full border border-white/10 p-2 lg:hidden"
+            aria-label={t("st_nav_open")}
+            onClick={() => setOpen(true)}
+          >
+            <List size={18} />
+          </button>
+          <div className="hidden font-sans text-sm text-zinc-400 lg:block">
+            {displayName} · {displayId}
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
+            <Link
+              href="/"
+              aria-label={t("st_back_site")}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-300 transition-colors duration-200 hover:text-foreground"
+            >
+              <ArrowLeft size={14} />
+              <span className="hidden sm:inline">{t("st_back_site")}</span>
+            </Link>
+            <Link
+              href="/student/notifications"
+              className="relative cursor-pointer rounded-full border border-white/10 p-2 transition-colors hover:text-foreground"
+              aria-label={t("st_bell", { n: unread })}
+              onClick={() => setLiveUnread(0)}
+            >
+              <Bell size={16} />
+              {unread > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] text-black animate-pulse">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              ) : null}
+            </Link>
             <button
               type="button"
-              className="cursor-pointer rounded-full border border-white/10 p-2 lg:hidden"
-              aria-label={t("st_nav_open")}
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                logout();
+                router.push("/student/login");
+              }}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400"
             >
-              <List size={18} />
+              <SignOut size={14} />
+              {t("st_out")}
             </button>
-            <div className="hidden font-sans text-sm text-zinc-400 lg:block">
-              {displayName} · {displayId}
-            </div>
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher compact />
-              <Link
-                href="/"
-                aria-label={t("st_back_site")}
-                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-300 transition-colors duration-200 hover:text-foreground"
-              >
-                <ArrowLeft size={14} />
-                <span className="hidden sm:inline">{t("st_back_site")}</span>
-              </Link>
-              <Link
-                href="/student/notifications"
-                className="relative cursor-pointer rounded-full border border-white/10 p-2"
-                aria-label={t("st_bell", { n: unread })}
-              >
-                <Bell size={16} />
-                {unread ? (
-                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent" />
-                ) : null}
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  router.push("/student/login");
-                }}
-                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400"
-              >
-                <SignOut size={14} />
-                {t("st_out")}
-              </button>
-            </div>
-          </header>
+          </div>
+        </header>
         <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>
+      <StudentNotificationToast />
     </div>
   );
 }

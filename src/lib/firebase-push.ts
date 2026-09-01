@@ -21,24 +21,19 @@ function readConfig(): FirebaseWebConfig | null {
 
 async function serviceWorkerRegistration(config: FirebaseOptions) {
   if (!("serviceWorker" in navigator)) return undefined;
-  const existing = await navigator.serviceWorker.getRegistration("/firebase-cloud-messaging-push-scope");
-  if (existing) return existing;
 
-  const serialized = JSON.stringify(config);
-  const script = `
-    importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
-    importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
-    firebase.initializeApp(${serialized});
-  `;
-  const blob = new Blob([script], { type: "application/javascript" });
-  const url = URL.createObjectURL(blob);
-  try {
-    const registration = await navigator.serviceWorker.register(url, { scope: "/firebase-cloud-messaging-push-scope" });
-    await navigator.serviceWorker.ready;
-    return registration;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  const params = new URLSearchParams({
+    apiKey: config.apiKey || "",
+    authDomain: config.authDomain || "",
+    projectId: config.projectId || "",
+    storageBucket: config.storageBucket || "",
+    messagingSenderId: config.messagingSenderId || "",
+    appId: config.appId || "",
+  });
+  const swUrl = `/firebase-messaging-sw.js?${params.toString()}`;
+  const registration = await navigator.serviceWorker.register(swUrl, { scope: "/" });
+  await navigator.serviceWorker.ready;
+  return registration;
 }
 
 export async function registerWebPushToken(): Promise<string | null> {

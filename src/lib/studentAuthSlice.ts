@@ -4,6 +4,7 @@ const STORAGE_KEY = "optech-student-auth";
 
 export type StudentSession = {
   accessToken: string | null;
+  refreshToken: string | null;
   name: string | null;
   studentCode: string | null;
   hydrated: boolean;
@@ -11,14 +12,21 @@ export type StudentSession = {
 
 function readSession(): StudentSession {
   if (typeof window === "undefined") {
-    return { accessToken: null, name: null, studentCode: null, hydrated: false };
+    return { accessToken: null, refreshToken: null, name: null, studentCode: null, hydrated: false };
   }
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return { accessToken: null, name: null, studentCode: null, hydrated: true };
-    return { ...(JSON.parse(raw) as StudentSession), hydrated: true };
+    if (!raw) return { accessToken: null, refreshToken: null, name: null, studentCode: null, hydrated: true };
+    const parsed = JSON.parse(raw) as StudentSession;
+    return {
+      accessToken: parsed.accessToken ?? null,
+      refreshToken: parsed.refreshToken ?? null,
+      name: parsed.name ?? null,
+      studentCode: parsed.studentCode ?? null,
+      hydrated: true,
+    };
   } catch {
-    return { accessToken: null, name: null, studentCode: null, hydrated: true };
+    return { accessToken: null, refreshToken: null, name: null, studentCode: null, hydrated: true };
   }
 }
 
@@ -29,6 +37,7 @@ function persist(state: StudentSession) {
 
 const initialState: StudentSession = {
   accessToken: null,
+  refreshToken: null,
   name: null,
   studentCode: null,
   hydrated: false,
@@ -52,7 +61,7 @@ const slice = createSlice({
     },
     clearStudentSession() {
       if (typeof window !== "undefined") window.sessionStorage.removeItem(STORAGE_KEY);
-      return { accessToken: null, name: null, studentCode: null, hydrated: true };
+      return { accessToken: null, refreshToken: null, name: null, studentCode: null, hydrated: true };
     },
   },
 });

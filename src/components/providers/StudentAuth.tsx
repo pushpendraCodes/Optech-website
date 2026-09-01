@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef } fr
 import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { useStudentLoginMutation, useStudentLogoutMutation } from "@/lib/api";
+import { pushTokenForLogin } from "@/lib/push-on-login";
 import { clearStudentSession, setStudentSession } from "@/lib/studentAuthSlice";
 import type { RootState } from "@/lib/store";
 import type { ApiSuccess, AuthPayload } from "@/lib/api-types";
@@ -38,11 +39,13 @@ export function StudentAuthProvider({ children }: { children: React.ReactNode })
   const login = useCallback(
     async (id: string, password: string) => {
       try {
-        const body = await loginApi({ studentId: id.trim(), password }).unwrap();
+        const pushToken = await pushTokenForLogin();
+        const body = await loginApi({ studentId: id.trim(), password, pushToken }).unwrap();
         const payload = (body as ApiSuccess<AuthPayload>).data;
         dispatch(
           setStudentSession({
             accessToken: payload.accessToken,
+            refreshToken: payload.refreshToken,
             name: payload.user.name,
             studentCode: payload.user.studentCode || payload.user.studentId || id.trim(),
           }),

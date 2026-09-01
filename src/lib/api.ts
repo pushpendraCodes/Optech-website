@@ -38,12 +38,18 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       api.dispatch(clearStudentSession());
       return result;
     }
-    const refresh = await rawBase({ url: "/auth/refresh", method: "POST" }, api, extra);
+    const refreshToken = (api.getState() as RootState).studentAuth.refreshToken;
+    const refresh = await rawBase(
+      { url: "/auth/refresh", method: "POST", body: refreshToken ? { refreshToken } : undefined },
+      api,
+      extra,
+    );
     if (refresh.data) {
       const body = refresh.data as ApiSuccess<AuthPayload>;
       api.dispatch(
         setStudentSession({
           accessToken: body.data.accessToken,
+          refreshToken: body.data.refreshToken,
           name: body.data.user.name,
           studentCode: body.data.user.studentCode || body.data.user.studentId || null,
         }),
@@ -117,6 +123,12 @@ export const api = createApi({
       query: () => "/public/scholarship",
       providesTags: ["Public"],
     }),
+    submitEnquiry: build.mutation<
+      ApiSuccess<Record<string, unknown>>,
+      { name: string; email: string; phone: string; course: string; message?: string }
+    >({
+      query: (body) => ({ url: "/public/enquiry", method: "POST", body }),
+    }),
     quoteFee: build.mutation<
       ApiSuccess<{
         fee: number;
@@ -144,7 +156,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/public/enroll/validate-code", method: "POST", body }),
     }),
-    studentLogin: build.mutation<ApiSuccess<AuthPayload>, { studentId: string; password: string }>({
+    studentLogin: build.mutation<ApiSuccess<AuthPayload>, { studentId: string; password: string; pushToken?: string }>({
       query: (body) => ({ url: "/auth/student/login", method: "POST", body }),
     }),
     studentLogout: build.mutation<ApiSuccess<unknown>, void>({
@@ -229,6 +241,10 @@ export const api = createApi({
       query: (id) => ({ url: `/student/notifications/${id}/read`, method: "PATCH" }),
       invalidatesTags: ["Student"],
     }),
+    markAllStudentNotificationsRead: build.mutation<ApiSuccess<{ read: boolean }>, void>({
+      query: () => ({ url: "/student/notifications/read-all", method: "PATCH" }),
+      invalidatesTags: ["Student"],
+    }),
     getStudentReferrals: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
       query: () => "/student/referrals",
       providesTags: ["Student"],
@@ -241,8 +257,18 @@ export const api = createApi({
       query: () => "/student/notices",
       providesTags: ["Student"],
     }),
-    getStudentNotifications: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
-      query: () => "/student/notifications",
+    getStudentNotifications: build.query<
+      ApiSuccess<Record<string, unknown>[]>,
+      { page?: number; limit?: number } | void
+    >({
+      query: (arg) => {
+        if (!arg) return "/student/notifications";
+        const params = new URLSearchParams();
+        if (arg.page) params.set("page", String(arg.page));
+        if (arg.limit) params.set("limit", String(arg.limit));
+        const q = params.toString();
+        return q ? `/student/notifications?${q}` : "/student/notifications";
+      },
       providesTags: ["Student"],
     }),
     getStudentLive: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
@@ -254,14 +280,9 @@ export const api = createApi({
     }),
     getPublicConfig: build.query<ApiSuccess<{ razorpayKeyId?: string }>, void>({
       query: () => "/public/config",
-      providesTags: ["Public"],
     }),
     startCheckout: build.mutation<
-      ApiSuccess<{
-        order: { id: string; amount: number; currency: string };
-        paymentId: string;
-        quote: { fee: number; discount: number; total: number };
-      }>,
+      ApiSuccess<{ order: { id: string; amount: number; currency: string }; paymentId: string; quote: unknown }>,
       {
         name: string;
         email: string;
@@ -269,7 +290,7 @@ export const api = createApi({
         courseId: string;
         batchId?: string;
         coupon?: string;
-        parts?: number;
+        parts: number;
         referralCode?: string;
       }
     >({
@@ -283,18 +304,20 @@ export const api = createApi({
     }),
     submitScholarship: build.mutation<
       ApiSuccess<{
+        correct: number;
+        total: number;
         percent: number;
-        score?: number;
-        max?: number;
-        correct?: number;
-        wrong?: number;
-        skipped?: number;
+        passed: boolean;
         couponCode?: string;
-        slab?: { couponPercent?: number };
+        discountPercent?: number;
+        name: string;
+        phone: string;
+        email?: string;
+        studentCode?: string;
         timeTakenSeconds?: number;
       }>,
       {
-        examId: string;
+        examId?: string;
         name: string;
         phone: string;
         email?: string;
@@ -323,6 +346,7 @@ export const {
   useGetLinksQuery,
   useGetLiveQuery,
   useGetScholarshipQuery,
+  useSubmitEnquiryMutation,
   useQuoteFeeMutation,
   useValidateEnrollmentCodeMutation,
   useStudentLoginMutation,
@@ -345,6 +369,7 @@ export const {
   useGetStudentCertificatesQuery,
   useLazyGetStudentCertificatePdfQuery,
   useMarkStudentNotificationReadMutation,
+  useMarkAllStudentNotificationsReadMutation,
   useGetStudentReferralsQuery,
   useCreateReferralMutation,
   useGetStudentNoticesQuery,

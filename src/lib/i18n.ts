@@ -310,10 +310,13 @@ const en = {
   form_ph_email: "you@example.com",
   form_ph_msg: "Tell us about your goals or preferred batch timing…",
   form_submit: "Submit Enquiry",
-  form_sending: "Opening mail…",
-  form_thanks: "Enquiry ready to send",
+  form_sending: "Submitting…",
+  form_thanks: "Enquiry received",
   form_thanks_body:
     "Your email client should open with the enquiry details. If it didn't, write to us at {email} or call {phone}.",
+  form_thanks_saved:
+    "We received your enquiry. Our team will contact you within 24 hours on working days. You can also reach us at {email} or {phone}.",
+  form_error: "Could not submit your enquiry. Check your details and try again.",
   form_again: "Send another enquiry",
 
   scholar_eyebrow: "SCHOLARSHIP EXAM // PUBLIC",
@@ -760,9 +763,11 @@ const hi: Record<Keys, string> = {
   form_ph_email: "you@example.com",
   form_ph_msg: "लक्ष्य या पसंदीदा बैच समय बताएँ…",
   form_submit: "पूछताछ भेजें",
-  form_sending: "मेल खुल रहा है…",
-  form_thanks: "पूछताछ भेजने के लिए तैयार",
+  form_sending: "जमा हो रहा है…",
+  form_thanks: "पूछताछ प्राप्त हुई",
   form_thanks_body: "ईमेल क्लाइंट विवरण के साथ खुलना चाहिए। नहीं खुला तो {email} पर लिखें या {phone} पर कॉल करें।",
+  form_thanks_saved: "हमें आपकी पूछताछ मिल गई। कार्य दिवसों में 24 घंटे के भीतर संपर्क करेंगे। {email} या {phone} पर भी संपर्क कर सकते हैं।",
+  form_error: "पूछताछ जमा नहीं हो सकी। विवरण जाँचकर पुनः प्रयास करें।",
   form_again: "एक और पूछताछ",
 
   scholar_eyebrow: "छात्रवृत्ति परीक्षा // सार्वजनिक",
@@ -1206,9 +1211,11 @@ const mr: Record<Keys, string> = {
   form_ph_email: "you@example.com",
   form_ph_msg: "ध्येय किंवा आवडती बॅच वेळ सांगा…",
   form_submit: "चौकशी पाठवा",
-  form_sending: "मेल उघडत आहे…",
-  form_thanks: "चौकशी पाठवण्यासाठी तयार",
+  form_sending: "सबमिट होत आहे…",
+  form_thanks: "चौकशी मिळाली",
   form_thanks_body: "ईमेल क्लायंट तपशीलांसह उघडला पाहिजे. नसेल तर {email} वर लिहा किंवा {phone} वर कॉल करा.",
+  form_thanks_saved: "आम्हाला तुमची चौकशी मिळाली. कार्य दिवसांमध्ये 24 तासांत संपर्क करू. {email} किंवा {phone} वरही संपर्क करू शकता.",
+  form_error: "चौकशी सबमिट होऊ शकली नाही. तपशील तपासून पुन्हा प्रयत्न करा.",
   form_again: "आणखी एक चौकशी",
 
   scholar_eyebrow: "शिष्यवृत्ती परीक्षा // सार्वजनिक",

@@ -16,8 +16,19 @@ export function AuroraCursorTrail() {
     if (!canvas) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const sim = createAuroraFluid(canvas);
-    return () => sim?.destroy();
+    let sim: ReturnType<typeof createAuroraFluid> | null = null;
+    try {
+      sim = createAuroraFluid(canvas);
+    } catch {
+      /* WebGL not supported or disabled */
+    }
+    return () => {
+      try {
+        sim?.destroy();
+      } catch {
+        /* ignore */
+      }
+    };
   }, [skip]);
 
   if (skip) return null;
