@@ -45,7 +45,7 @@ export function StudentAuthProvider({ children }: { children: React.ReactNode })
         dispatch(
           setStudentSession({
             accessToken: payload.accessToken,
-            refreshToken: payload.refreshToken,
+            refreshToken: payload.refreshToken ?? null,
             name: payload.user.name,
             studentCode: payload.user.studentCode || payload.user.studentId || id.trim(),
           }),

@@ -49,7 +49,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       api.dispatch(
         setStudentSession({
           accessToken: body.data.accessToken,
-          refreshToken: body.data.refreshToken,
+          refreshToken: body.data.refreshToken ?? null,
           name: body.data.user.name,
           studentCode: body.data.user.studentCode || body.data.user.studentId || null,
         }),
