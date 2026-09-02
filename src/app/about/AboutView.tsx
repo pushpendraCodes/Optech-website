@@ -4,19 +4,20 @@ import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { PageHero } from "@/components/ui/PageHero";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { ABOUT, INSTITUTE, STATS } from "@/lib/optech";
-import { STAT_I18N } from "@/lib/i18n";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export function AboutView() {
   const { t } = useI18n();
+  const site = useSiteSettings();
+
   return (
     <>
       <PageHero
         eyebrow="about_eyebrow"
         title="about_title"
         titleAccent="about_title_accent"
-        rawDescription={ABOUT.story}
-        vars={{ year: INSTITUTE.established }}
+        description="about_story"
+        vars={{ year: "1994" }}
       />
 
       <section className="border-b border-white/5 px-6 py-16 md:px-10 md:py-24">
@@ -29,7 +30,7 @@ export function AboutView() {
               {t("about_mission_h")}
             </h2>
             <p className="font-sans text-base leading-relaxed text-zinc-400">
-              {ABOUT.mission}
+              {t("about_mission_body")}
             </p>
           </article>
           <article className="flex flex-col gap-4 border-t border-white/10 pt-6">
@@ -40,68 +41,9 @@ export function AboutView() {
               {t("about_vision_h")}
             </h2>
             <p className="font-sans text-base leading-relaxed text-zinc-400">
-              {ABOUT.vision}
+              {t("about_vision_body")}
             </p>
           </article>
-        </div>
-      </section>
-
-      <section className="border-b border-white/5 px-6 py-16 md:px-10 md:py-24">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="mb-12 max-w-[36rem]">
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-              {t("about_legacy")}
-            </span>
-            <h2 className="mt-4 font-sans text-3xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-4xl">
-              {t("about_trusted")}{" "}
-              <span className="text-accent">{t("about_trusted_accent")}</span>
-            </h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map((stat) => {
-              const keys = STAT_I18N[stat.label];
-              return (
-                <article key={stat.label} className="card-surface flex flex-col gap-2 p-6">
-                  <span className="font-sans text-3xl font-semibold tracking-tight text-foreground">
-                    {stat.value}
-                  </span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">
-                    {keys ? t(keys.label) : stat.label}
-                  </span>
-                  <span className="font-sans text-sm text-zinc-400">
-                    {keys ? t(keys.note) : stat.note}
-                  </span>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-6 py-16 md:px-10 md:py-24">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="mb-12 max-w-[36rem]">
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-              {t("about_apart")}
-            </span>
-            <h2 className="mt-4 font-sans text-3xl font-semibold leading-[0.98] tracking-tighter text-foreground md:text-4xl">
-              {t("about_outcomes")}{" "}
-              <span className="text-accent">{t("about_outcomes_accent")}</span>
-            </h2>
-          </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {ABOUT.highlights.map((item, i) => (
-              <article key={item.title} className="flex flex-col gap-3 border-t border-white/10 pt-6">
-                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="font-sans text-xl font-semibold tracking-tight text-foreground">
-                  {item.title}
-                </h3>
-                <p className="font-sans text-sm leading-relaxed text-zinc-400">{item.body}</p>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -112,7 +54,7 @@ export function AboutView() {
               {t("about_visit")}
             </h2>
             <p className="mt-3 font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
-              {INSTITUTE.address} · {INSTITUTE.hours}
+              {site.address || "—"}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

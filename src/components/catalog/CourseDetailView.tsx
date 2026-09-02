@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Play, Star } from "@phosphor-icons/react";
 import { PageHero } from "@/components/ui/PageHero";
-import { formatInr, getCourse, staffForCourse } from "@/lib/catalog";
-import { REVIEWS } from "@/lib/optech";
+import { formatInr } from "@/lib/catalog";
 import { btnGhost, btnPrimary } from "@/components/ui/ui";
 import { Tx } from "@/components/i18n/Tx";
 import { useGetCourseQuery } from "@/lib/api";
@@ -26,60 +25,55 @@ function youtubeId(url: string) {
 }
 
 export function CourseDetailView({ slug }: { slug: string }) {
-  const { data, isError } = useGetCourseQuery(slug);
+  const { data, isLoading, isError } = useGetCourseQuery(slug);
   const api = data?.data;
-  const fallback = getCourse(slug);
-  const course = api
-    ? {
-        slug: api.slug,
-        title: loc(api.title),
-        body: loc(api.description),
-        category: loc(api.category?.name) || String(api.category?.slug ?? ""),
-        mode: api.mode ?? "offline",
-        fee: api.fee,
-        duration: api.duration ?? "",
-        certificate: api.certificate ?? "",
-        rating: 4.8,
-        reviewCount: 0,
-        demoVideo: api.demoVideo ?? "",
-        thumbnail: api.thumbnail?.url ?? "",
-        syllabus: api.syllabus ?? [],
-        batches: (api.batches ?? []).map((batch) => ({
-          id: batch._id,
-          label: batch.label,
-          timing: batch.timing,
-          seats: batch.seats,
-          start: batch.start ? String(batch.start).slice(0, 10) : "",
-        })),
-        staff: (api.instructors ?? []).map((member) => ({
-          name: member.name,
-          role: member.role ?? "",
-          bio: member.bio ?? "",
-          photo: member.photo?.url ?? "",
-        })),
-      }
-    : fallback
-      ? {
-          ...fallback,
-          thumbnail: fallback.thumbnail ?? "",
-          staff: staffForCourse(fallback).map((m) => ({
-            name: m.name,
-            role: m.role,
-            bio: m.bio,
-            photo: m.photo,
-          })),
-        }
-      : null;
 
-  if (!course) {
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-6 py-24 md:px-10">
+        <div className="h-64 animate-pulse rounded-3xl border border-white/10 bg-white/3" />
+      </div>
+    );
+  }
+
+  if (!api) {
     return (
       <PageHero
-        eyebrow={isError ? "enroll_missing" : "enroll_missing"}
+        eyebrow="enroll_missing"
         title="enroll_missing"
         description="enroll_missing_desc"
       />
     );
   }
+
+  const course = {
+    slug: api.slug,
+    title: loc(api.title),
+    body: loc(api.description),
+    category: loc(api.category?.name) || String(api.category?.slug ?? ""),
+    mode: api.mode ?? "offline",
+    fee: api.fee,
+    duration: api.duration ?? "",
+    certificate: api.certificate ?? "",
+    rating: 4.8,
+    reviewCount: 0,
+    demoVideo: api.demoVideo ?? "",
+    thumbnail: api.thumbnail?.url ?? "",
+    syllabus: api.syllabus ?? [],
+    batches: (api.batches ?? []).map((batch) => ({
+      id: batch._id,
+      label: batch.label,
+      timing: batch.timing,
+      seats: batch.seats,
+      start: batch.start ? String(batch.start).slice(0, 10) : "",
+    })),
+    staff: (api.instructors ?? []).map((member) => ({
+      name: member.name,
+      role: member.role ?? "",
+      bio: member.bio ?? "",
+      photo: member.photo?.url ?? "",
+    })),
+  };
 
   const demoId = course.demoVideo ? youtubeId(course.demoVideo) : "";
 
@@ -156,22 +150,6 @@ export function CourseDetailView({ slug }: { slug: string }) {
                 ) : (
                   <p className="text-sm text-zinc-500">Faculty details coming soon.</p>
                 )}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="font-sans text-2xl font-semibold tracking-tight">
-                <Tx k="detail_reviews" />
-              </h2>
-              <div className="mt-6 grid gap-4">
-                {REVIEWS.map((review) => (
-                  <figure key={review.name} className="card-surface p-5">
-                    <p className="font-sans text-sm leading-relaxed text-zinc-300">“{review.quote}”</p>
-                    <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-                      {review.name} · {review.role}
-                    </figcaption>
-                  </figure>
-                ))}
               </div>
             </div>
           </div>

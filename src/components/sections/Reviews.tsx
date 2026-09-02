@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { EyebrowBadge } from "@/components/ui/EyebrowBadge";
 import { AnimatedItem, AnimatedSection } from "@/components/ui/AnimatedSection";
-import { REVIEWS } from "@/lib/optech";
+import { btnPrimary } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export function Reviews() {
@@ -30,28 +32,15 @@ export function Reviews() {
           </AnimatedItem>
         </AnimatedSection>
 
-        <AnimatedSection className="grid gap-6 md:grid-cols-2">
-          {REVIEWS.map((review) => (
-            <AnimatedItem key={review.name}>
-              <figure className="card-surface flex h-full flex-col gap-6 p-7 md:p-8">
-                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-                  ★★★★★
-                </span>
-                <blockquote className="flex-1 font-sans text-lg font-medium leading-snug tracking-tight text-foreground md:text-xl">
-                  &ldquo;{review.quote}&rdquo;
-                </blockquote>
-                <figcaption className="flex items-center justify-between border-t border-white/8 pt-5">
-                  <span className="font-sans text-sm text-zinc-300">
-                    {review.name}
-                  </span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-zinc-500">
-                    {review.role}
-                  </span>
-                </figcaption>
-              </figure>
-            </AnimatedItem>
-          ))}
-        </AnimatedSection>
+        <div className="card-surface mx-auto max-w-xl p-8 text-center">
+          <p className="font-sans text-sm leading-relaxed text-zinc-400">
+            {t("reviews_page_body")}
+          </p>
+          <Link href="/reviews" className={`${btnPrimary} mt-6 inline-flex`}>
+            {t("reviews_page_cta")}
+            <ArrowUpRight size={14} weight="bold" />
+          </Link>
+        </div>
       </div>
     </section>
   );

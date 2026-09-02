@@ -2,13 +2,17 @@
 
 import { FormEvent, useState } from "react";
 import { ArrowUpRight, CheckCircle } from "@phosphor-icons/react";
-import { ENQUIRY_COURSES, INSTITUTE } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { useSubmitEnquiryMutation } from "@/lib/api";
+import { useGetCoursesQuery, useSubmitEnquiryMutation } from "@/lib/api";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { loc } from "@/lib/loc";
 import { fieldClass, labelClass, selectClass } from "@/components/ui/ui";
 
 export function EnquiryForm() {
   const { t } = useI18n();
+  const site = useSiteSettings();
+  const { data: coursesData } = useGetCoursesQuery();
+  const courses = coursesData?.data ?? [];
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitEnquiry, { isLoading }] = useSubmitEnquiryMutation();
@@ -45,7 +49,7 @@ export function EnquiryForm() {
           {t("form_thanks")}
         </h3>
         <p className="max-w-[40ch] font-sans text-sm leading-relaxed text-zinc-400">
-          {t("form_thanks_saved", { email: INSTITUTE.email, phone: INSTITUTE.phone })}
+          {t("form_thanks_saved", { email: site.email || "—", phone: site.mobile || "—" })}
         </p>
         <button
           type="button"
@@ -128,15 +132,25 @@ export function EnquiryForm() {
         <label htmlFor="course" className={labelClass}>
           {t("form_course")}
         </label>
-        <select id="course" name="course" required defaultValue="" className={selectClass}>
+        <select
+          id="course"
+          name="course"
+          required={courses.length > 0}
+          defaultValue=""
+          className={selectClass}
+          disabled={courses.length === 0}
+        >
           <option value="" disabled>
-            {t("form_select")}
+            {courses.length ? t("form_select") : t("courses_none")}
           </option>
-          {ENQUIRY_COURSES.map((course) => (
-            <option key={course} value={course}>
-              {course}
-            </option>
-          ))}
+          {courses.map((course) => {
+            const title = loc(course.title);
+            return (
+              <option key={course._id} value={title}>
+                {title}
+              </option>
+            );
+          })}
         </select>
       </div>
 

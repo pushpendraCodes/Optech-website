@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, WarningCircle } from "@phosphor-icons/react";
 import { PaymentReceipt } from "@/components/catalog/PaymentReceipt";
-import { formatInr, getCourse } from "@/lib/catalog";
+import { formatInr } from "@/lib/catalog";
 import { PageHero } from "@/components/ui/PageHero";
 import { btnGhost, btnPrimary, fieldClass, labelClass } from "@/components/ui/ui";
 import {
@@ -65,8 +65,7 @@ function loadRazorpay() {
 }
 
 export function EnrollFlow({ slug }: { slug: string }) {
-  const fallback = getCourse(slug);
-  const { data } = useGetCourseQuery(slug);
+  const { data, isLoading } = useGetCourseQuery(slug);
   const { data: config } = useGetPublicConfigQuery();
   const apiCourse = data?.data;
   const { name } = useStudentAuth();
@@ -86,24 +85,24 @@ export function EnrollFlow({ slug }: { slug: string }) {
   const [downloading, setDownloading] = useState(false);
   const [formError, setFormError] = useState("");
   const [phone, setPhone] = useState("");
-  const [quote, setQuote] = useState({ fee: apiCourse?.fee ?? fallback?.fee ?? 0, discount: 0, total: apiCourse?.fee ?? fallback?.fee ?? 0 });
+  const [quote, setQuote] = useState({ fee: apiCourse?.fee ?? 0, discount: 0, total: apiCourse?.fee ?? 0 });
   const errorRef = useRef<HTMLDivElement>(null);
 
   const course = useMemo(() => {
-    if (!apiCourse && !fallback) return null;
+    if (!apiCourse) return null;
     return {
-      id: apiCourse?._id ?? "",
+      id: apiCourse._id ?? "",
       slug,
-      title: apiCourse ? loc(apiCourse.title) : fallback?.title ?? "",
-      fee: apiCourse?.fee ?? fallback?.fee ?? 0,
-      batches: (apiCourse?.batches ?? fallback?.batches ?? []).map((batch) => ({
-        id: "id" in batch ? batch.id : batch._id,
+      title: loc(apiCourse.title),
+      fee: apiCourse.fee,
+      batches: (apiCourse.batches ?? []).map((batch) => ({
+        id: batch._id,
         label: batch.label,
         timing: batch.timing,
-        start: "start" in batch ? String(batch.start ?? "").slice(0, 10) : "",
+        start: batch.start ? String(batch.start).slice(0, 10) : "",
       })),
     };
-  }, [apiCourse, fallback, slug]);
+  }, [apiCourse, slug]);
 
   const selectedBatch = batchId || course?.batches[0]?.id || "";
   const razorpayKey = config?.data?.razorpayKeyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
@@ -113,6 +112,14 @@ export function EnrollFlow({ slug }: { slug: string }) {
   useEffect(() => {
     if (urlReferral && !coupon) setCoupon(urlReferral);
   }, [urlReferral, coupon]);
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-24">
+        <div className="h-64 animate-pulse rounded-3xl border border-white/10 bg-white/3" />
+      </div>
+    );
+  }
 
   if (!course) {
     return <PageHero eyebrow="enroll_missing" title="enroll_missing" description="enroll_missing_desc" />;

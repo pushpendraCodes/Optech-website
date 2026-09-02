@@ -114,6 +114,12 @@ const en = {
   about_visit: "Come visit our Deori campus",
   about_staff: "Meet Our Staff",
   about_contact: "Contact Us",
+  about_story:
+    "Since 1994, Optech Computer Institute has trained students across Vidarbha with practical IT skills, industry-aligned curriculum, and placement support.",
+  about_mission_body:
+    "Deliver accessible, job-ready computer education with hands-on labs, certified faculty, and transparent fees for every learner.",
+  about_vision_body:
+    "Empower rural and semi-urban youth with digital skills that open doors to employment, entrepreneurship, and lifelong learning.",
 
   courses_eyebrow: "COURSES // EDUCATION FOR THE FUTURE",
   courses_title: "Master the skills that",
@@ -135,6 +141,7 @@ const en = {
   courses_trending: "Trending",
   courses_count: "{n} course",
   courses_count_plural: "{n} courses",
+  courses_none: "No courses published yet",
   courses_duration: "Duration",
   courses_view: "View syllabus",
   courses_enroll: "Enroll",
@@ -202,6 +209,7 @@ const en = {
   calc_desc:
     "Pick a course, apply a scholarship or referral coupon, and preview installment dues. Built to convert walk-in leads.",
   calc_course: "Course",
+  calc_empty: "No published courses yet. Check back after the institute adds programs.",
   calc_coupon: "Coupon (optional)",
   calc_parts: "Installments",
   calc_full: "Pay in full",
@@ -575,6 +583,12 @@ const hi: Record<Keys, string> = {
   about_visit: "हमारे देवरी कैंपस आएँ",
   about_staff: "स्टाफ से मिलें",
   about_contact: "संपर्क करें",
+  about_story:
+    "1994 से ऑपटेक कंप्यूटर इंस्टीट्यूट विदर्भ में व्यावहारिक आईटी कौशल, उद्योग-समन्वित पाठ्यक्रम और प्लेसमेंट सहायता के साथ छात्रों को प्रशिक्षित कर रहा है।",
+  about_mission_body:
+    "हर शिक्षार्थी के लिए व्यावहारिक लैब, प्रमाणित फैकल्टी और पारदर्शी शुल्क के साथ सुलभ, नौकरी-तैयार कंप्यूटर शिक्षा प्रदान करना।",
+  about_vision_body:
+    "ग्रामीण और अर्ध-शहरी युवाओं को डिजिटल कौशल से सशक्त बनाना जो रोजगार, उद्यमिता और आजीवन सीखने के द्वार खोलें।",
 
   courses_eyebrow: "कोर्स // भविष्य की शिक्षा",
   courses_title: "वे कौशल सीखें जो",
@@ -595,6 +609,7 @@ const hi: Record<Keys, string> = {
   courses_trending: "ट्रेंडिंग",
   courses_count: "{n} कोर्स",
   courses_count_plural: "{n} कोर्स",
+  courses_none: "अभी कोई कोर्स प्रकाशित नहीं है",
   courses_duration: "अवधि",
   courses_view: "पाठ्यक्रम देखें",
   courses_enroll: "नामांकन",
@@ -657,6 +672,7 @@ const hi: Record<Keys, string> = {
   calc_title_accent: "खरीद से पहले।",
   calc_desc: "कोर्स चुनें, छात्रवृत्ति या रेफरल कूपन लगाएँ, और किस्त तिथियाँ देखें।",
   calc_course: "कोर्स",
+  calc_empty: "अभी कोई कोर्स प्रकाशित नहीं है। संस्थान द्वारा कोर्स जोड़ने के बाद देखें।",
   calc_coupon: "कूपन (वैकल्पिक)",
   calc_parts: "किस्तें",
   calc_full: "एकमुश्त भुगतान",
@@ -1025,6 +1041,12 @@ const mr: Record<Keys, string> = {
   about_visit: "देवरी कॅम्पसला भेट द्या",
   about_staff: "स्टाफ भेटा",
   about_contact: "संपर्क साधा",
+  about_story:
+    "1994 पासून ऑपटेक कॉम्प्युटर इन्स्टिट्यूट विदर्भातील विद्यार्थ्यांना व्यावहारिक आयटी कौशल्य, उद्योग-सुसंगत अभ्यासक्रम आणि प्लेसमेंट सहाय्यासह प्रशिक्षण देत आहे.",
+  about_mission_body:
+    "प्रत्येक शिक्षार्थ्यासाठी प्रयोगशाळा, प्रमाणित शिक्षक आणि पारदर्शक फीसह सुलभ, नोकरी-तयार संगणक शिक्षण देणे.",
+  about_vision_body:
+    "ग्रामीण आणि अर्ध-शहरी युवकांना रोजगार, उद्योजकता आणि आजीवन शिक्षणाचे द्वार उघडणारे डिजिटल कौशल्य देणे.",
 
   courses_eyebrow: "अभ्यासक्रम // भविष्याचे शिक्षण",
   courses_title: "ती कौशल्ये शिका जी",
@@ -1045,6 +1067,7 @@ const mr: Record<Keys, string> = {
   courses_trending: "ट्रेंडिंग",
   courses_count: "{n} अभ्यासक्रम",
   courses_count_plural: "{n} अभ्यासक्रम",
+  courses_none: "अद्याप कोणतेही अभ्यासक्रम प्रकाशित नाहीत",
   courses_duration: "कालावधी",
   courses_view: "अभ्यासक्रम पहा",
   courses_enroll: "प्रवेश",
@@ -1107,6 +1130,7 @@ const mr: Record<Keys, string> = {
   calc_title_accent: "खरेदीपूर्वी.",
   calc_desc: "अभ्यासक्रम निवडा, शिष्यवृत्ती किंवा रेफरल कूपन लावा आणि हप्त्याच्या तारखा पाहा.",
   calc_course: "अभ्यासक्रम",
+  calc_empty: "अद्याप कोणतेही अभ्यासक्रम प्रकाशित नाहीत. संस्थेने अभ्यासक्रम जोडल्यानंतर पुन्हा तपासा.",
   calc_coupon: "कूपन (ऐच्छिक)",
   calc_parts: "हप्ते",
   calc_full: "एकदाच भरा",

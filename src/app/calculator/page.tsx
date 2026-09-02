@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { PageHero } from "@/components/ui/PageHero";
-import { COURSES, INSTALLMENT_RULES, calcPayable, formatInr } from "@/lib/catalog";
+import { INSTALLMENT_RULES, calcPayable, formatInr } from "@/lib/catalog";
 import { fieldClass, labelClass, selectClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useGetCoursesQuery, useQuoteFeeMutation } from "@/lib/api";
@@ -14,15 +14,13 @@ export default function CalculatorPage() {
   const [quoteFee] = useQuoteFeeMutation();
   const catalog = useMemo(
     () =>
-      data?.data?.length
-        ? data.data.map((item) => ({
-            id: item._id,
-            slug: item.slug,
-            title: loc(item.title),
-            duration: item.duration ?? "",
-            fee: item.fee,
-          }))
-        : COURSES.map((item) => ({ id: "", slug: item.slug, title: item.title, duration: item.duration, fee: item.fee })),
+      (data?.data ?? []).map((item) => ({
+        id: item._id,
+        slug: item.slug,
+        title: loc(item.title),
+        duration: item.duration ?? "",
+        fee: item.fee,
+      })),
     [data],
   );
   const [slug, setSlug] = useState(catalog[0]?.slug ?? "");
@@ -71,6 +69,11 @@ export default function CalculatorPage() {
         description="calc_desc"
       />
       <section className="px-6 py-16 md:px-10 md:py-20">
+        {catalog.length === 0 ? (
+          <div className="card-surface mx-auto max-w-xl p-8 text-center">
+            <p className="font-sans text-sm leading-relaxed text-zinc-400">{t("calc_empty")}</p>
+          </div>
+        ) : (
         <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-2">
           <div className="card-surface flex flex-col gap-5 p-6 md:p-8">
             <div>
@@ -152,6 +155,7 @@ export default function CalculatorPage() {
             </ul>
           </div>
         </div>
+        )}
       </section>
     </>
   );

@@ -3,14 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
-import { STAFF } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { TiltStaffCard, type StaffMember } from "./TiltStaffCard";
 import { useGetStaffQuery } from "@/lib/api";
 
-// Smile-shaped curve: middle pair sits highest/flattest, each step outward
-// drops lower and rotates more. No horizontal overlap — cards sit in a normal
-// flex row with gaps, so every photo stays fully visible.
 const ARC = [
   { rotate: -22, y: "34%" },
   { rotate: -13, y: "14%" },
@@ -22,19 +18,17 @@ const ARC = [
 
 export function StaffView() {
   const { t } = useI18n();
-  const { data } = useGetStaffQuery();
-  const members: StaffMember[] = data?.data?.length
-    ? data.data.map((member) => ({
-        name: member.name,
-        role: member.role ?? "",
-        focus: member.focus ?? "",
-        bio: member.bio ?? "",
-        photo: member.photo?.url ?? "",
-        linkedin: member.linkedin ?? "",
-        twitter: member.twitter ?? "",
-        website: member.website ?? "",
-      }))
-    : STAFF.map((member) => ({ ...member }));
+  const { data, isLoading } = useGetStaffQuery();
+  const members: StaffMember[] = (data?.data ?? []).map((member) => ({
+    name: member.name,
+    role: member.role ?? "",
+    focus: member.focus ?? "",
+    bio: member.bio ?? "",
+    photo: member.photo?.url ?? "",
+    linkedin: member.linkedin ?? "",
+    twitter: member.twitter ?? "",
+    website: member.website ?? "",
+  }));
   const featured = members.filter((m) => m.photo).slice(0, 6);
 
   return (
@@ -61,42 +55,44 @@ export function StaffView() {
           </p>
         </div>
 
-        <div className="relative mx-auto mt-12 max-w-[1100px] md:mt-16">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-[10%] bottom-0 h-32 rounded-[999px] blur-3xl"
-            style={{
-              background:
-                "radial-gradient(60% 100% at 50% 60%, rgba(168,85,247,0.30) 0%, rgba(236,72,153,0.18) 34%, transparent 74%)",
-            }}
-          />
+        {featured.length > 0 ? (
+          <div className="relative mx-auto mt-12 max-w-[1100px] md:mt-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[10%] bottom-0 h-32 rounded-[999px] blur-3xl"
+              style={{
+                background:
+                  "radial-gradient(60% 100% at 50% 60%, rgba(168,85,247,0.30) 0%, rgba(236,72,153,0.18) 34%, transparent 74%)",
+              }}
+            />
 
-          <div className="relative flex flex-nowrap items-start justify-center gap-1.5 px-1 pb-12 sm:gap-2.5 sm:pb-16 md:gap-3 md:pb-20 lg:gap-4">
-            {featured.map((member, i) => {
-              const pose = ARC[i];
-              if (!pose) return null;
-              return (
-                <div
-                  key={member.name}
-                  className="w-[40px] flex-none sm:w-[70px] md:w-[96px] lg:w-[128px]"
-                  style={{
-                    transform: `rotate(${pose.rotate}deg) translateY(${pose.y})`,
-                  }}
-                >
-                  <div className="overflow-hidden rounded-[14px] border border-white/10 bg-zinc-900 shadow-[0_16px_32px_-14px_rgba(0,0,0,0.85)] transition-transform duration-300 hover:-translate-y-1 sm:rounded-[18px] md:rounded-[22px]">
-                    <Image
-                      src={member.photo}
-                      alt=""
-                      width={380}
-                      height={480}
-                      className="aspect-[4/5] h-auto w-full object-cover"
-                    />
+            <div className="relative flex flex-nowrap items-start justify-center gap-1.5 px-1 pb-12 sm:gap-2.5 sm:pb-16 md:gap-3 md:pb-20 lg:gap-4">
+              {featured.map((member, i) => {
+                const pose = ARC[i];
+                if (!pose) return null;
+                return (
+                  <div
+                    key={member.name}
+                    className="w-[40px] flex-none sm:w-[70px] md:w-[96px] lg:w-[128px]"
+                    style={{
+                      transform: `rotate(${pose.rotate}deg) translateY(${pose.y})`,
+                    }}
+                  >
+                    <div className="overflow-hidden rounded-[14px] border border-white/10 bg-zinc-900 shadow-[0_16px_32px_-14px_rgba(0,0,0,0.85)] transition-transform duration-300 hover:-translate-y-1 sm:rounded-[18px] md:rounded-[22px]">
+                      <Image
+                        src={member.photo}
+                        alt=""
+                        width={380}
+                        height={480}
+                        className="aspect-[4/5] h-auto w-full object-cover"
+                      />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : null}
       </section>
 
       <section className="px-6 py-16 md:px-10 md:py-24">
@@ -109,11 +105,23 @@ export function StaffView() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-[1400px] gap-x-7 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
-          {members.map((member) => (
-            <TiltStaffCard key={member.name} member={member} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="mx-auto grid max-w-[1400px] gap-7 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="card-surface h-72 animate-pulse" />
+            ))}
+          </div>
+        ) : members.length === 0 ? (
+          <p className="mx-auto max-w-[1400px] text-center font-sans text-sm text-zinc-400">
+            No staff profiles published yet.
+          </p>
+        ) : (
+          <div className="mx-auto grid max-w-[1400px] gap-x-7 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
+            {members.map((member) => (
+              <TiltStaffCard key={member.name} member={member} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="border-t border-white/5 px-6 py-16 md:px-10 md:py-20">

@@ -1,12 +1,16 @@
 "use client";
 
 import { WhatsappLogo } from "@phosphor-icons/react";
-import { INSTITUTE } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export function WhatsAppButton() {
   const { t } = useI18n();
-  const href = `https://wa.me/${INSTITUTE.whatsapp}?text=${encodeURIComponent(t("whatsapp_msg"))}`;
+  const site = useSiteSettings();
+
+  if (!site.whatsapp) return null;
+
+  const href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(t("whatsapp_msg"))}`;
 
   return (
     <a

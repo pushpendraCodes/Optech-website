@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
-import { INSTITUTE } from "@/lib/optech";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import type { MessageKey } from "@/lib/i18n";
 
 const navLinks: { key: MessageKey; href: string }[] = [
@@ -23,6 +23,8 @@ const navLinks: { key: MessageKey; href: string }[] = [
 
 export function Footer() {
   const { t } = useI18n();
+  const site = useSiteSettings();
+
   return (
     <footer
       id="footer"
@@ -36,11 +38,11 @@ export function Footer() {
                 aria-hidden
                 className="inline-block h-2 w-2 rounded-full bg-accent shadow-[0_0_12px_rgba(212,162,47,0.9)]"
               />
-              Optech / Computer Institute
+              {site.name || "Optech"} / Computer Institute
             </div>
             <p className="max-w-[38ch] font-sans text-sm leading-relaxed text-zinc-400">
-              &copy; {new Date().getFullYear()} {INSTITUTE.name} of Technology
-              &mdash; {INSTITUTE.address}
+              &copy; {new Date().getFullYear()} {site.name || "Optech Computer Institute"}
+              {site.address ? ` — ${site.address}` : ""}
             </p>
           </div>
 
@@ -64,17 +66,14 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-2 border-t border-white/5 pt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-zinc-500 md:flex-row md:items-center md:justify-between">
+          <span>{t("footer_iso")}</span>
           <span>
-            Est. {INSTITUTE.established} &nbsp;&middot;&nbsp; {t("footer_iso")}
-            &nbsp;&middot;&nbsp; {INSTITUTE.rating} {t("footer_google")}
-          </span>
-          <span>
-            {INSTITUTE.phone} &nbsp;&middot;&nbsp; {INSTITUTE.email}{" "}
-            &nbsp;&middot;&nbsp;
+            {site.mobile ? `${site.mobile} · ` : ""}
+            {site.email ? `${site.email} · ` : ""}
             <Link href="/reviews" className="text-zinc-400 transition-colors hover:text-accent">
               {t("review_us")}
             </Link>{" "}
-            &nbsp;&middot;&nbsp;
+            ·{" "}
             <Link href="/student/login" className="text-zinc-400 transition-colors hover:text-accent">
               {t("nav_student")}
             </Link>

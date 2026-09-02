@@ -285,6 +285,19 @@ export const api = createApi({
     getPublicConfig: build.query<ApiSuccess<{ razorpayKeyId?: string }>, void>({
       query: () => "/public/config",
     }),
+    getWebsiteSettings: build.query<
+      ApiSuccess<{
+        name: string;
+        email: string;
+        mobile: string;
+        address: string;
+        logo?: Record<string, unknown> | null;
+      }>,
+      void
+    >({
+      query: () => "/public/settings/website",
+      providesTags: ["Public"],
+    }),
     startCheckout: build.mutation<
       ApiSuccess<{ order: { id: string; amount: number; currency: string }; paymentId: string; quote: unknown }>,
       {
@@ -382,6 +395,7 @@ export const {
   useGetStudentLiveQuery,
   useSavePushTokenMutation,
   useGetPublicConfigQuery,
+  useGetWebsiteSettingsQuery,
   useStartCheckoutMutation,
   useVerifyCheckoutMutation,
   useSubmitScholarshipMutation,
