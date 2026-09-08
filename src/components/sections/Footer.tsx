@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import type { MessageKey } from "@/lib/i18n";
 
 const navLinks: { key: MessageKey; href: string }[] = [
@@ -11,6 +12,7 @@ const navLinks: { key: MessageKey; href: string }[] = [
   { key: "nav_about", href: "/about" },
   { key: "nav_courses", href: "/courses" },
   { key: "nav_staff", href: "/staff" },
+  { key: "nav_live", href: "/live" },
   { key: "nav_gallery", href: "/gallery" },
   { key: "nav_alumni", href: "/alumni" },
   { key: "nav_jobs", href: "/jobs" },
@@ -32,14 +34,8 @@ export function Footer() {
     >
       <div className="mx-auto flex max-w-[1400px] flex-col gap-10">
         <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.32em] text-foreground">
-              <span
-                aria-hidden
-                className="inline-block h-2 w-2 rounded-full bg-accent shadow-[0_0_12px_rgba(212,162,47,0.9)]"
-              />
-              {site.name || "Optech"} / Computer Institute
-            </div>
+          <div className="flex flex-col gap-4">
+            <BrandLogo href="/" height={48} />
             <p className="max-w-[38ch] font-sans text-sm leading-relaxed text-zinc-400">
               &copy; {new Date().getFullYear()} {site.name || "Optech Computer Institute"}
               {site.address ? ` — ${site.address}` : ""}
@@ -48,18 +44,17 @@ export function Footer() {
 
           <nav className="grid grid-cols-2 gap-x-10 gap-y-3 md:grid-cols-3">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="group flex flex-col gap-1">
-                <span className="font-sans text-[13px] font-medium text-foreground transition-colors group-hover:text-accent">
-                  {t(link.key)}
-                  <ArrowUpRight
-                    size={11}
-                    weight="bold"
-                    className="ml-1 inline-block align-baseline opacity-0 transition-opacity group-hover:opacity-100"
-                  />
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-zinc-500">
-                  Optech Deori
-                </span>
+              <Link
+                key={link.href}
+                href={link.href}
+                className="group font-sans text-[13px] font-medium text-foreground transition-colors hover:text-accent"
+              >
+                {t(link.key)}
+                <ArrowUpRight
+                  size={11}
+                  weight="bold"
+                  className="ml-1 inline-block align-baseline opacity-0 transition-opacity group-hover:opacity-100"
+                />
               </Link>
             ))}
           </nav>

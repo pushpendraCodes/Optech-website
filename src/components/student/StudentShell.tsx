@@ -23,6 +23,7 @@ import {
   Briefcase,
   VideoCamera,
   X,
+  Notebook,
 } from "@phosphor-icons/react";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 import { useI18n } from "@/components/providers/I18nProvider";
@@ -30,6 +31,7 @@ import { useGetStudentDashboardQuery } from "@/lib/api";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
 import { StudentPushSetup } from "@/components/student/StudentPushSetup";
 import { StudentNotificationToast, showStudentToast } from "@/components/student/StudentNotificationToast";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { useLivePush } from "@/hooks/useLivePush";
 import type { MessageKey } from "@/lib/i18n";
 
@@ -40,6 +42,7 @@ const NAV: { href: string; label: MessageKey; icon: typeof House }[] = [
   { href: "/student/live", label: "st_live", icon: VideoCamera },
   { href: "/student/notes", label: "st_notes", icon: Cardholder },
   { href: "/student/quizzes", label: "st_quizzes", icon: Question },
+  { href: "/student/exams", label: "st_exams", icon: Notebook },
   { href: "/student/typing", label: "st_typing", icon: Keyboard },
   { href: "/student/attendance", label: "st_attendance", icon: ChartLine },
   { href: "/student/fees", label: "st_fees", icon: CurrencyInr },
@@ -90,7 +93,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-dvh overflow-hidden bg-background">
+    <div className="student-portal h-dvh overflow-hidden bg-background">
       <StudentPushSetup active={Boolean(studentId)} />
       {open ? (
         <button
@@ -102,14 +105,12 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 bg-black/70 p-4 backdrop-blur-xl transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 bg-[#0a0a18]/80 p-4 backdrop-blur-xl transition-transform duration-200 ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="mb-6 flex shrink-0 items-center justify-between">
-          <Link href="/" className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-            {t("st_brand")}
-          </Link>
+        <div className="mb-6 flex shrink-0 items-center justify-between gap-2">
+          <BrandLogo href="/" height={32} />
           <button
             type="button"
             className="cursor-pointer p-1 lg:hidden"
@@ -151,7 +152,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex h-dvh min-w-0 flex-col lg:pl-64">
-        <header className="z-30 flex shrink-0 items-center justify-between border-b border-white/8 bg-black/50 px-4 py-3 backdrop-blur-xl">
+        <header className="z-30 flex shrink-0 items-center justify-between border-b border-white/8 bg-[#0a0a18]/70 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             className="cursor-pointer rounded-full border border-white/10 p-2 lg:hidden"
@@ -181,7 +182,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
             >
               <Bell size={16} />
               {unread > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] text-black animate-pulse">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] text-white animate-pulse">
                   {unread > 99 ? "99+" : unread}
                 </span>
               ) : null}

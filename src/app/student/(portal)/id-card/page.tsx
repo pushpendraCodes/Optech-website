@@ -2,8 +2,8 @@
 
 import { DownloadSimple } from "@phosphor-icons/react";
 import { Tx } from "@/components/i18n/Tx";
-import { btnGhost } from "@/components/ui/ui";
-import { useGetStudentIdCardQuery, useGetStudentProfileQuery } from "@/lib/api";
+import { btnPrimary } from "@/components/ui/ui";
+import { useGetStudentIdCardQuery, useGetStudentProfileQuery, useGetWebsiteSettingsQuery } from "@/lib/api";
 import { useStudentAuth } from "@/components/providers/StudentAuth";
 
 type IdCardData = {
@@ -15,7 +15,50 @@ type IdCardData = {
   pdf?: string;
 };
 
-function IdCardPreview({ card }: { card: IdCardData }) {
+function logoUrl(logo: unknown) {
+  if (!logo) return "";
+  if (typeof logo === "string") return logo;
+  if (typeof logo === "object" && "url" in logo) {
+    const url = (logo as { url?: unknown }).url;
+    return url ? String(url) : "";
+  }
+  return "";
+}
+
+function BrandHeader({ logoSrc, instituteName }: { logoSrc?: string; instituteName: string }) {
+  const parts = instituteName.trim().split(/\s+/);
+  const main = (parts[0] || "Optech").toUpperCase();
+  const sub = parts.slice(1).join(" ").toUpperCase() || "COMPUTER INSTITUTE";
+
+  return (
+    <div className="flex items-center gap-3 bg-[#6b4423] px-4 py-3">
+      {logoSrc ? (
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoSrc} alt="" className="h-full w-full object-contain" />
+        </div>
+      ) : (
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d4a22f]/60 bg-[#3d2818] font-mono text-[10px] text-[#d4a22f]">
+          {main.slice(0, 2)}
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="truncate font-sans text-sm font-bold uppercase tracking-wide text-white">{main}</p>
+        <p className="truncate font-mono text-[9px] uppercase tracking-[0.16em] text-white/80">{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function IdCardPreview({
+  card,
+  logoSrc,
+  instituteName,
+}: {
+  card: IdCardData;
+  logoSrc?: string;
+  instituteName: string;
+}) {
   const initials = card.name
     .split(" ")
     .map((part) => part[0])
@@ -25,15 +68,7 @@ function IdCardPreview({ card }: { card: IdCardData }) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-[#5c4033]/40 bg-[#faf0e6] shadow-[0_12px_40px_-20px_rgba(0,0,0,0.55)]">
-      <div className="flex items-center gap-3 bg-[#6b4423] px-4 py-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d4a22f]/60 bg-[#3d2818] font-mono text-[10px] text-[#d4a22f]">
-          OP
-        </div>
-        <div>
-          <p className="font-sans text-sm font-bold uppercase tracking-wide text-white">Optech</p>
-          <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/80">Computer Institute</p>
-        </div>
-      </div>
+      <BrandHeader logoSrc={logoSrc} instituteName={instituteName} />
 
       <div className="px-4 pb-4 pt-5">
         <div className="mx-auto mb-4 aspect-[5/6] w-28 overflow-hidden rounded border border-[#6b4423]/30 bg-[#e8d5c4]">
@@ -74,6 +109,7 @@ export default function IdCardPage() {
   const { studentId, name } = useStudentAuth();
   const { data, isLoading } = useGetStudentIdCardQuery(undefined, { skip: !studentId });
   const { data: profileRes } = useGetStudentProfileQuery(undefined, { skip: !studentId });
+  const { data: siteRes } = useGetWebsiteSettingsQuery();
 
   const api = data?.data as
     | {
@@ -94,6 +130,10 @@ export default function IdCardPage() {
         user?: { name?: string; phone?: string };
       }
     | undefined;
+
+  const site = siteRes?.data as { name?: string; logo?: unknown } | undefined;
+  const instituteName = String(site?.name || "Optech Computer Institute");
+  const logoSrc = logoUrl(site?.logo) || undefined;
 
   const card: IdCardData = {
     name: api?.name || profile?.user?.name || name || "Student",
@@ -136,12 +176,12 @@ export default function IdCardPage() {
       ) : (
         <>
           <div className="mt-8">
-            <IdCardPreview card={card} />
+            <IdCardPreview card={card} logoSrc={logoSrc} instituteName={instituteName} />
           </div>
 
-          <button type="button" className={`${btnGhost} mt-5 w-full justify-center`} onClick={downloadPdf}>
+          <button type="button" className={`${btnPrimary} mt-5 w-full justify-center`} onClick={downloadPdf}>
             <DownloadSimple size={16} aria-hidden />
-            Download PDF
+            Download ID card PDF
           </button>
 
           <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-600">

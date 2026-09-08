@@ -13,6 +13,27 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function youtubeIdFrom(row: Record<string, unknown>) {
+  const id = String(row.youtubeId ?? "").trim();
+  if (id) return id;
+  const url = String(row.youtubeUrl ?? "").trim();
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") return u.pathname.split("/").filter(Boolean)[0] ?? "";
+    if (host.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return v;
+      const match = u.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);
+      return match?.[1] ?? "";
+    }
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 export function AlumniBoard() {
   const { data, isLoading } = useGetAlumniQuery();
   const people = (data?.data ?? []).map((row) => {
@@ -20,7 +41,9 @@ export function AlumniBoard() {
       row.photo && typeof row.photo === "object" && "url" in (row.photo as object)
         ? String((row.photo as { url?: string }).url ?? "")
         : "";
+    const youtubeId = youtubeIdFrom(row as Record<string, unknown>);
     return {
+      id: String(row._id ?? row.name ?? ""),
       name: String(row.name ?? ""),
       batch: String(row.batchYear ?? ""),
       course: "",
@@ -28,6 +51,7 @@ export function AlumniBoard() {
       story: String(row.story ?? ""),
       featured: Boolean(row.featured),
       photo,
+      youtubeId,
     };
   });
 
@@ -46,7 +70,7 @@ export function AlumniBoard() {
       ) : (
         <div className="mx-auto grid max-w-[1400px] gap-4 md:grid-cols-2">
           {people.map((person) => (
-            <article key={person.name} className="card-surface overflow-hidden p-0">
+            <article key={person.id || person.name} className="card-surface overflow-hidden p-0">
               <div className="flex flex-col gap-0 sm:flex-row">
                 <div className="relative h-44 w-full shrink-0 overflow-hidden bg-zinc-900 sm:h-auto sm:w-40">
                   {person.photo ? (
@@ -77,7 +101,23 @@ export function AlumniBoard() {
                     {person.course ? `${person.course} · ` : ""}
                     {person.role}
                   </p>
-                  <p className="mt-4 font-sans text-sm leading-relaxed text-zinc-300">{person.story}</p>
+                  {person.story ? (
+                    <p className="mt-4 font-sans text-sm leading-relaxed text-zinc-300">{person.story}</p>
+                  ) : null}
+                  {person.youtubeId ? (
+                    <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-black">
+                      <div className="relative aspect-video w-full">
+                        <iframe
+                          title={`${person.name} video`}
+                          src={`https://www.youtube.com/embed/${person.youtubeId}`}
+                          className="absolute inset-0 h-full w-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </article>

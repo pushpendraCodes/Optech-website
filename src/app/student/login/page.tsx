@@ -7,6 +7,7 @@ import { useStudentAuth } from "@/components/providers/StudentAuth";
 import { btnPrimary, fieldClass, labelClass } from "@/components/ui/ui";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export default function StudentLoginPage() {
   const { t } = useI18n();
@@ -32,14 +33,15 @@ export default function StudentLoginPage() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-6 py-16">
+    <div className="student-portal flex min-h-dvh items-center justify-center px-6 py-16">
       <form onSubmit={onSubmit} className="card-surface w-full max-w-md p-6 md:p-8">
-        <div className="mb-4 flex items-center justify-between">
-          <Link href="/" className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
-            {t("login_back")}
-          </Link>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <BrandLogo href="/" height={36} />
           <LanguageSwitcher compact />
         </div>
+        <Link href="/" className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent">
+          {t("login_back")}
+        </Link>
         <h1 className="mt-4 font-sans text-3xl font-semibold tracking-tight">
           {t("login_title")}
         </h1>

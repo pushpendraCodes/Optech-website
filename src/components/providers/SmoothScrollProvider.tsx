@@ -10,9 +10,10 @@ export function SmoothScrollProvider({ children }: Props) {
   const lenisRef = useRef<Lenis | null>(null);
   const pathname = usePathname();
   const isStudentPortal = pathname.startsWith("/student");
+  const disableSmooth = isStudentPortal || pathname === "/live" || pathname.startsWith("/live/");
 
   useEffect(() => {
-    if (isStudentPortal) return;
+    if (disableSmooth) return;
 
     const lenis = new Lenis({
       lerp: 0.1,
@@ -35,7 +36,7 @@ export function SmoothScrollProvider({ children }: Props) {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [isStudentPortal]);
+  }, [disableSmooth]);
 
   return <>{children}</>;
 }

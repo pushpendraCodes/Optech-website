@@ -60,7 +60,8 @@ export type CmsItem = {
   cta?: string;
   slot?: string;
   sortOrder?: number;
-  image?: { url?: string };
+  image?: { url?: string; resourceType?: string; format?: string };
+  media?: { url?: string; resourceType?: string; format?: string }[];
 };
 
 export type AuthPayload = {

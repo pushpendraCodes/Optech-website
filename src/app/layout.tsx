@@ -21,11 +21,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "Optech Computer Institute — Deori",
-    template: "%s | Optech Deori",
+    template: "%s | Optech Computer Institute",
   },
   description:
     "Maharashtra's premier tech institute since 1994. Industry-recognized certifications, hands-on training, and 95% placement support in Deori.",
   metadataBase: new URL("http://localhost:3000"),
+  applicationName: "Optech Computer Institute",
+  icons: {
+    icon: [{ url: "/LOGO-new.png", type: "image/png" }],
+    shortcut: "/LOGO-new.png",
+    apple: "/LOGO-new.png",
+  },
 };
 
 export default function RootLayout({

@@ -209,6 +209,24 @@ export const api = createApi({
       query: ({ id, answers }) => ({ url: `/student/quizzes/attempts/${id}/submit`, method: "POST", body: { answers } }),
       invalidatesTags: ["Student"],
     }),
+    getStudentExams: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/exams",
+      providesTags: ["Student"],
+    }),
+    getStudentExamAttempts: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
+      query: () => "/student/exam-attempts",
+      providesTags: ["Student"],
+    }),
+    startExam: build.mutation<ApiSuccess<Record<string, unknown>>, string>({
+      query: (id) => ({ url: `/student/exams/${id}/start`, method: "POST" }),
+    }),
+    submitExam: build.mutation<
+      ApiSuccess<Record<string, unknown>>,
+      { id: string; answers: { index: number; value: string | number }[] }
+    >({
+      query: ({ id, answers }) => ({ url: `/student/exams/attempts/${id}/submit`, method: "POST", body: { answers } }),
+      invalidatesTags: ["Student"],
+    }),
     getStudentTypingParagraphs: build.query<ApiSuccess<Record<string, unknown>[]>, void>({
       query: () => "/student/typing/paragraphs",
       providesTags: ["Student"],
@@ -292,6 +310,8 @@ export const api = createApi({
         mobile: string;
         address: string;
         logo?: Record<string, unknown> | null;
+        adBox1Enabled?: boolean;
+        adBox2Enabled?: boolean;
       }>,
       void
     >({
@@ -379,6 +399,10 @@ export const {
   useGetStudentQuizAttemptsQuery,
   useStartQuizMutation,
   useSubmitQuizMutation,
+  useGetStudentExamsQuery,
+  useGetStudentExamAttemptsQuery,
+  useStartExamMutation,
+  useSubmitExamMutation,
   useStartTypingMutation,
   useSubmitTypingMutation,
   useGetStudentTypingParagraphsQuery,

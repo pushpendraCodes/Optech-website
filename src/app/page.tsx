@@ -1,7 +1,8 @@
 import { Hero } from "@/components/sections/Hero";
 import { CinematicReveal } from "@/components/sections/CinematicReveal";
 import { Impact } from "@/components/sections/Impact";
-import { WhyChooseUs } from "@/components/sections/WhyChooseUs";
+import { HomeStaff } from "@/components/sections/HomeStaff";
+import { HomeAlumni } from "@/components/sections/HomeAlumni";
 import { Reviews } from "@/components/sections/Reviews";
 import { HomeCta } from "@/components/sections/HomeCta";
 import { HomeOverlays } from "@/components/site/HomeOverlays";
@@ -13,10 +14,11 @@ export default function Home() {
       <Hero />
       <CinematicReveal />
       <Impact />
-      <WhyChooseUs />
-      <HomeAdBanner />
+      <HomeStaff />
+      <HomeAlumni />
       <Reviews />
       <HomeCta />
+      <HomeAdBanner />
       <HomeOverlays />
     </>
   );

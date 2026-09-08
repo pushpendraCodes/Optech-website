@@ -10,11 +10,41 @@
   --card-border: rgba(255, 255, 255, 0.08);
   --hud-line: rgba(255, 255, 255, 0.1);
   --color-destructive: #ef4444;
+  --brand-from: #ff1f3d;
+  --brand-mid: #8b2cff;
+  --brand-to: #1a5cff;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
+}
+
+/* Student portal — match admin red→purple→blue brand */
+.student-portal {
+  --background: #06060e;
+  --foreground: #eef0f8;
+  --muted: #8b90a5;
+  --accent: #5b8cff;
+  --accent-soft: rgba(91, 140, 255, 0.18);
+  --card-bg: rgba(18, 18, 42, 0.88);
+  --card-border: rgba(140, 150, 255, 0.14);
+  --hud-line: rgba(140, 150, 255, 0.14);
+  --brand-from: #ff1f3d;
+  --brand-mid: #8b2cff;
+  --brand-to: #1a5cff;
+  color: var(--foreground);
+  background:
+    radial-gradient(90% 55% at 0% 0%, rgba(255, 31, 61, 0.2) 0%, transparent 55%),
+    radial-gradient(80% 50% at 100% 0%, rgba(26, 92, 255, 0.24) 0%, transparent 50%),
+    radial-gradient(60% 40% at 50% 100%, rgba(139, 44, 255, 0.12) 0%, transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+}
+
+.student-portal ::selection {
+  background: rgba(91, 140, 255, 0.35);
+  color: #fff;
 }
 
 @theme inline {

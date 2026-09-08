@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AURORA_CONFIG } from "@/lib/aurora";
 import { createAuroraFluid } from "@/lib/aurora-fluid";
@@ -8,7 +8,8 @@ import { createAuroraFluid } from "@/lib/aurora-fluid";
 export function AuroraCursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
-  const skip = pathname.startsWith("/student");
+  const skip = pathname.startsWith("/student") || pathname === "/live" || pathname.startsWith("/live/");
+  const [hiddenOverControl, setHiddenOverControl] = useState(false);
 
   useEffect(() => {
     if (!AURORA_CONFIG.enabled || skip) return;
@@ -18,7 +19,9 @@ export function AuroraCursorTrail() {
 
     let sim: ReturnType<typeof createAuroraFluid> | null = null;
     try {
-      sim = createAuroraFluid(canvas);
+      sim = createAuroraFluid(canvas, {
+        onSuppressChange: (suppressed) => setHiddenOverControl(suppressed),
+      });
     } catch {
       /* WebGL not supported or disabled */
     }
@@ -28,6 +31,7 @@ export function AuroraCursorTrail() {
       } catch {
         /* ignore */
       }
+      setHiddenOverControl(false);
     };
   }, [skip]);
 
@@ -37,8 +41,13 @@ export function AuroraCursorTrail() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[45]"
-      style={{ mixBlendMode: "screen", width: "100%", height: "100%" }}
+      className="pointer-events-none fixed inset-0 z-[45] transition-opacity duration-200 ease-out"
+      style={{
+        mixBlendMode: "screen",
+        width: "100%",
+        height: "100%",
+        opacity: hiddenOverControl ? 0 : 1,
+      }}
     />
   );
 }

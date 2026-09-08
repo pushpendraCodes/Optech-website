@@ -240,7 +240,10 @@ function createProgram(gl: WebGL2RenderingContext, vs: WebGLShader, fsSource: st
   };
 }
 
-export function createAuroraFluid(canvas: HTMLCanvasElement) {
+export function createAuroraFluid(
+  canvas: HTMLCanvasElement,
+  options?: { onSuppressChange?: (suppressed: boolean) => void },
+) {
   const gl = canvas.getContext("webgl2", {
     alpha: true,
     depth: false,
@@ -537,6 +540,18 @@ export function createAuroraFluid(canvas: HTMLCanvasElement) {
     color: generateAuroraColor(),
   };
 
+  let suppressed = false;
+  const onSuppressChange = options?.onSuppressChange;
+
+  function isInteractiveTarget(target: EventTarget | null) {
+    if (!(target instanceof Element)) return false;
+    return Boolean(
+      target.closest(
+        'a, button, [role="button"], input, select, textarea, label, summary, [data-no-aurora]',
+      ),
+    );
+  }
+
   function pointerPos(clientX: number, clientY: number) {
     const rect = canvas.getBoundingClientRect();
     return {
@@ -567,6 +582,17 @@ export function createAuroraFluid(canvas: HTMLCanvasElement) {
   }
 
   const onMouseMove = (e: MouseEvent) => {
+    if (isInteractiveTarget(e.target)) {
+      suppressed = true;
+      pointer.down = false;
+      pointer.moved = false;
+      onSuppressChange?.(true);
+      return;
+    }
+    if (suppressed) {
+      suppressed = false;
+      onSuppressChange?.(false);
+    }
     const wasDown = pointer.down;
     pointer.down = true;
     const { x, y } = pointerPos(e.clientX, e.clientY);
@@ -577,6 +603,13 @@ export function createAuroraFluid(canvas: HTMLCanvasElement) {
   const onTouchStart = (e: TouchEvent) => {
     const t = e.targetTouches[0];
     if (!t) return;
+    if (isInteractiveTarget(e.target)) {
+      suppressed = true;
+      onSuppressChange?.(true);
+      return;
+    }
+    suppressed = false;
+    onSuppressChange?.(false);
     const { x, y } = pointerPos(t.clientX, t.clientY);
     updatePointerDown(x, y);
   };
@@ -584,6 +617,12 @@ export function createAuroraFluid(canvas: HTMLCanvasElement) {
   const onTouchMove = (e: TouchEvent) => {
     const t = e.targetTouches[0];
     if (!t) return;
+    if (suppressed || isInteractiveTarget(e.target)) {
+      suppressed = true;
+      pointer.moved = false;
+      onSuppressChange?.(true);
+      return;
+    }
     const { x, y } = pointerPos(t.clientX, t.clientY);
     updatePointerMove(x, y);
   };
@@ -644,7 +683,7 @@ export function createAuroraFluid(canvas: HTMLCanvasElement) {
       pointer.color = generateAuroraColor();
     }
 
-    if (pointer.moved) {
+    if (pointer.moved && !suppressed) {
       pointer.moved = false;
       splatPointer();
     }
