@@ -7,6 +7,7 @@ import { formatTime, getProgress } from "./types";
 interface LiveBannerProps {
   batch: ClassroomBatch;
   isLive?: boolean;
+  compact?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -14,6 +15,7 @@ interface LiveBannerProps {
 export function LiveBanner({
   batch,
   isLive = false,
+  compact = false,
   className = "",
   style,
 }: LiveBannerProps) {
@@ -43,7 +45,9 @@ export function LiveBanner({
         borderColor: "rgba(255, 255, 255, 0.12)",
         boxShadow: "0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 0, 0, 0.5)",
       }}
-      className={`rounded-2xl border p-4 sm:p-5 backdrop-blur-xl transition-all duration-300 ${className}`}
+      className={`rounded-2xl border backdrop-blur-xl transition-all duration-300 ${
+        compact ? "p-3" : "p-4 sm:p-5"
+      } ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -69,14 +73,14 @@ export function LiveBanner({
       </div>
 
       {/* Main Title: Course — Batch */}
-      <div className="mt-2.5">
-        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug">
+      <div className={compact ? "mt-1.5" : "mt-2.5"}>
+        <h2 className={`font-bold text-white tracking-tight leading-snug ${compact ? "text-sm" : "text-base sm:text-lg"}`}>
           {batch.course} — {batch.name}
         </h2>
       </div>
 
       {/* Info Row: Time & Students */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/70">
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/70 ${compact ? "mt-1.5" : "mt-2"}`}>
         <div className="flex items-center gap-1.5">
           <svg className="h-3.5 w-3.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -93,42 +97,47 @@ export function LiveBanner({
       </div>
 
       {/* Progress timeline bar */}
-      <div className="mt-4 pt-1">
-        <div className="relative flex items-center">
-          {/* Background track */}
-          <div className="h-1.5 w-full rounded-full bg-white/10" />
-
-          {/* Active green progress fill */}
+      {!compact ? (
+        <div className="mt-4 pt-1">
+          <div className="relative flex items-center">
+            <div className="h-1.5 w-full rounded-full bg-white/10" />
+            <div
+              className="absolute left-0 top-0 h-1.5 rounded-full transition-all duration-700"
+              style={{
+                width: `${displayProgress}%`,
+                background: "linear-gradient(90deg, #10B981, #22C55E)",
+                boxShadow: "0 0 10px #22C55E",
+              }}
+            />
+            <div
+              className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full border-2 border-[#090e1c] bg-white transition-all duration-700 cursor-pointer"
+              style={{
+                left: `calc(${displayProgress}% - 7px)`,
+                boxShadow: "0 0 10px #22C55E, 0 0 4px #fff",
+              }}
+            />
+          </div>
+          <div className="mt-1.5 flex justify-between text-[10px] font-medium text-white/40">
+            <span>{start}</span>
+            {isHovered && (
+              <span className="text-emerald-400 font-semibold animate-in fade-in">
+                {displayProgress}% elapsed
+              </span>
+            )}
+            <span>{end}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="absolute left-0 top-0 h-1.5 rounded-full transition-all duration-700"
+            className="h-full rounded-full transition-all duration-700"
             style={{
               width: `${displayProgress}%`,
               background: "linear-gradient(90deg, #10B981, #22C55E)",
-              boxShadow: "0 0 10px #22C55E",
-            }}
-          />
-
-          {/* Circular scrubber handle */}
-          <div
-            className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full border-2 border-[#090e1c] bg-white transition-all duration-700 cursor-pointer"
-            style={{
-              left: `calc(${displayProgress}% - 7px)`,
-              boxShadow: "0 0 10px #22C55E, 0 0 4px #fff",
             }}
           />
         </div>
-
-        {/* Time labels below bar */}
-        <div className="mt-1.5 flex justify-between text-[10px] font-medium text-white/40">
-          <span>{start}</span>
-          {isHovered && (
-            <span className="text-emerald-400 font-semibold animate-in fade-in">
-              {displayProgress}% elapsed
-            </span>
-          )}
-          <span>{end}</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

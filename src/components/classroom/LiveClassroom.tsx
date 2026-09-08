@@ -47,10 +47,10 @@ function StudentRoster({
   onPick: (s: ClassroomStudent) => void;
 }) {
   return (
-    <div className="mt-8">
+    <div className="mt-5 sm:mt-8">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-white sm:text-xl">Students in Class</h2>
+          <h2 className="text-base font-bold text-white sm:text-xl">Students in Class</h2>
           <span
             className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
             style={{ background: `${batch.color}33`, color: batch.accentColor }}
@@ -120,7 +120,7 @@ function ScheduleStrip({
 }) {
   if (batches.length === 0) return null;
   return (
-    <div className="mt-8">
+    <div className="mt-5 sm:mt-8">
       <p className="mb-3 text-[11px] font-semibold tracking-[0.2em] text-white/35 uppercase">
         Today&apos;s Schedule
       </p>
@@ -186,6 +186,27 @@ export function LiveClassroom({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [orbitActive, setOrbitActive] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1.0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const defaultZoom = useMemo(() => {
+    if (!isMobile || !selectedBatch) return 1;
+    const n = selectedBatch.students.length;
+    if (n > 18) return 0.72;
+    if (n > 10) return 0.85;
+    return 0.95;
+  }, [isMobile, selectedBatch?.id, selectedBatch?.students.length]);
+
+  useEffect(() => {
+    setZoomLevel(defaultZoom);
+  }, [defaultZoom]);
 
   const syncSelection = useCallback((batches: ClassroomBatch[]) => {
     setNextBatch(getNextBatch(batches));
@@ -243,7 +264,7 @@ export function LiveClassroom({
 
   return (
     <section
-      className="relative min-h-[calc(100vh-5rem)] w-full overflow-hidden pt-24 md:pt-28 pb-16"
+      className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-hidden pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16"
       style={{ background: "#050810" }}
     >
       {/* Background radial glow */}
@@ -254,9 +275,9 @@ export function LiveClassroom({
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-3 sm:px-6">
         {/* Header */}
-        <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div className="mb-3 flex flex-col justify-between gap-3 sm:mb-4 sm:flex-row sm:items-end">
           <div>
             <div className="mb-1.5 flex items-center gap-2.5">
               {isLive && (
@@ -265,11 +286,11 @@ export function LiveClassroom({
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                 </span>
               )}
-              <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase sm:text-xs">
                 {showingDemo ? "Demo Preview · 30 Students" : isLive ? "Live Classroom Session" : "Virtual Classroom"}
               </span>
             </div>
-            <h1 className="text-2xl leading-tight font-black text-white sm:text-3xl">
+            <h1 className="text-xl leading-tight font-black text-white sm:text-3xl">
               3D Interactive{" "}
               <span
                 className="bg-clip-text text-transparent"
@@ -280,8 +301,11 @@ export function LiveClassroom({
                 Classroom
               </span>
             </h1>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 hidden text-sm text-white/40 sm:block">
               Hover desks to view student profiles · Move mouse to explore the 3D scene
+            </p>
+            <p className="mt-1 text-xs text-white/40 sm:hidden">
+              Tap a desk or student below to view their profile
             </p>
           </div>
           <button
@@ -295,7 +319,7 @@ export function LiveClassroom({
                 setDemoMode(true);
               }
             }}
-            className="shrink-0 cursor-pointer rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors"
+            className="shrink-0 cursor-pointer self-start rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors sm:self-auto sm:px-4 sm:py-2"
             style={{
               borderColor: showingDemo ? "rgba(96,165,250,0.55)" : "rgba(255,255,255,0.12)",
               background: showingDemo ? "rgba(59,130,246,0.18)" : "rgba(255,255,255,0.04)",
@@ -306,11 +330,21 @@ export function LiveClassroom({
           </button>
         </div>
 
+        {/* Mobile: batch banner above classroom (not over canvas) */}
+        {isMobile ? (
+          <div className="mb-3">
+            <LiveBanner batch={selectedBatch} isLive={isLive} compact />
+          </div>
+        ) : null}
+
         {/* ━━━━━━━━━ 3D Classroom Container ━━━━━━━━━ */}
         <div
-          className="relative rounded-3xl overflow-hidden transition-all duration-700"
+          className="relative overflow-hidden rounded-2xl transition-all duration-700 sm:rounded-3xl"
           style={{
-            height: "clamp(560px, 75vh, 840px)",
+            height: isMobile
+              ? "min(62vh, 520px)"
+              : "clamp(560px, 75vh, 840px)",
+            minHeight: isMobile ? 360 : undefined,
             border: `1px solid ${selectedBatch.color}33`,
             boxShadow: `0 0 0 1px rgba(255,255,255,0.06), 0 32px 80px rgba(0,0,0,0.85), 0 0 50px ${selectedBatch.color}12`,
             opacity: isTransitioning ? 0 : 1,
@@ -335,35 +369,41 @@ export function LiveClassroom({
 
               {/* HUD layer above canvas */}
               <div className="pointer-events-none absolute inset-0 z-50">
-                {/* ━━━ Overlay: Top-Left HUD Banner ━━━ */}
-                <div className="absolute top-4 left-4 sm:top-5 sm:left-5 pointer-events-auto max-w-[min(340px,calc(100%-7rem))]">
-                  <LiveBanner batch={selectedBatch} isLive={isLive} />
-                </div>
+                {/* Desktop: banner over canvas */}
+                {!isMobile ? (
+                  <div className="pointer-events-auto absolute top-4 left-4 max-w-[min(340px,calc(100%-7rem))] sm:top-5 sm:left-5">
+                    <LiveBanner batch={selectedBatch} isLive={isLive} />
+                  </div>
+                ) : null}
 
-                {/* ━━━ Overlay: Analog Wall Clock (Top-Right) ━━━ */}
-                <div className="absolute top-4 right-4 sm:top-5 sm:right-5">
-                  <WallClock size={92} />
-                </div>
+                {/* Clock — smaller / hidden on very narrow */}
+                {!isMobile ? (
+                  <div className="absolute top-4 right-4 sm:top-5 sm:right-5">
+                    <WallClock size={92} />
+                  </div>
+                ) : (
+                  <div className="absolute top-2 right-2 opacity-90">
+                    <WallClock size={48} />
+                  </div>
+                )}
 
-                {/* ━━━ Overlay: Desk Count + Live Badge ━━━ */}
-                <div className="absolute inset-x-0 top-16 flex items-center justify-between px-5">
-                  <span className="rounded-full border border-white/10 bg-black/55 px-3 py-1 text-[11px] text-white/55 backdrop-blur-md">
-                    {selectedBatch.students.length} desks · {selectedBatch.course}
+                {/* Desk count — avoid overlapping banner on desktop; sit top-left on mobile */}
+                <div
+                  className={
+                    isMobile
+                      ? "absolute top-2 left-2"
+                      : "absolute inset-x-0 top-16 flex items-center justify-between px-5"
+                  }
+                >
+                  <span className="rounded-full border border-white/10 bg-black/55 px-2.5 py-1 text-[10px] text-white/55 backdrop-blur-md sm:px-3 sm:text-[11px]">
+                    {selectedBatch.students.length} desks
+                    {!isMobile ? ` · ${selectedBatch.course}` : ""}
                   </span>
-                  {/* {isLive ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-green-400/25 bg-black/55 px-3 py-1 text-[11px] font-semibold text-green-400 backdrop-blur-md">
-                      <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
-                      </span>
-                      In Session
-                    </span>
-                  ) : null} */}
                 </div>
 
-                {/* ━━━ Overlay: Profile Card (Right side) ━━━ */}
-                {hoveredStudent ? (
-                  <div className="absolute top-24 right-5 sm:top-28 sm:right-6 max-w-[300px] pointer-events-auto">
+                {/* Profile: desktop right panel / mobile bottom sheet */}
+                {hoveredStudent && !isMobile ? (
+                  <div className="pointer-events-auto absolute top-24 right-5 max-w-[300px] sm:top-28 sm:right-6">
                     <ProfileCard
                       student={hoveredStudent}
                       batch={selectedBatch}
@@ -373,13 +413,13 @@ export function LiveClassroom({
                 ) : null}
 
                 {/* ━━━ Bottom bar: camera controls only ━━━ */}
-                <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5">
+                <div className={`absolute left-2 right-2 sm:left-5 sm:right-auto ${isMobile ? "bottom-2" : "bottom-3 sm:bottom-5"}`}>
                   <div className="pointer-events-auto">
-                    <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-full border border-white/20 bg-[#0a1020]/92 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+                    <div className="inline-flex max-w-full flex-wrap items-center gap-0.5 rounded-full border border-white/20 bg-[#0a1020]/92 p-1 shadow-[0_8px_32px_rgba(0,0,0,0.65)] backdrop-blur-xl sm:gap-1 sm:p-1.5">
                       <button
                         type="button"
                         onClick={() => setOrbitActive((v) => !v)}
-                        className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors duration-200 ${
+                        className={`flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-colors duration-200 sm:gap-1.5 sm:px-3 sm:text-[11px] ${
                           orbitActive
                             ? "bg-white/20 text-white"
                             : "text-white/75 hover:bg-white/10 hover:text-white"
@@ -394,12 +434,12 @@ export function LiveClassroom({
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        {orbitActive ? "Orbiting…" : "Rotate View"}
+                        {orbitActive ? "Orbiting…" : isMobile ? "Rotate" : "Rotate View"}
                       </button>
                       <div className="h-4 w-px bg-white/15" />
                       <button
                         type="button"
-                        onClick={() => setZoomLevel((v) => Math.max(0.6, +(v - 0.15).toFixed(2)))}
+                        onClick={() => setZoomLevel((v) => Math.max(0.5, +(v - 0.15).toFixed(2)))}
                         className="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
                         aria-label="Zoom out"
                       >
@@ -425,7 +465,7 @@ export function LiveClassroom({
                         type="button"
                         onClick={() => {
                           setOrbitActive(false);
-                          setZoomLevel(1.0);
+                          setZoomLevel(defaultZoom);
                         }}
                         className="flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
                         aria-label="Reset camera"
@@ -444,6 +484,18 @@ export function LiveClassroom({
             <EmptyState nextBatch={nextBatch} />
           )}
         </div>
+
+        {/* Mobile profile sheet below canvas */}
+        {hoveredStudent && isMobile ? (
+          <div className="mt-3">
+            <ProfileCard
+              student={hoveredStudent}
+              batch={selectedBatch}
+              onClose={() => setHoveredStudent(null)}
+              className="w-full max-w-none"
+            />
+          </div>
+        ) : null}
 
         {/* ━━━ Student Roster Below Scene ━━━ */}
         {showClassroom && (

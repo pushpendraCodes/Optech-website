@@ -93,14 +93,13 @@ export function Navbar() {
         <div className="flex items-center gap-2 md:gap-3">
           <Link
             href="/live"
-            className="group relative inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-gradient-to-r from-red-950/40 via-red-900/25 to-amber-950/30 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-red-200 shadow-[0_0_14px_rgba(239,68,68,0.22)] backdrop-blur-md transition-all duration-200 hover:border-red-400 hover:bg-red-500/20 hover:text-white hover:shadow-[0_0_22px_rgba(239,68,68,0.45)] hover:scale-[1.02] active:scale-[0.98] md:px-3.5"
+            className="group relative hidden items-center gap-2 rounded-full border border-red-500/40 bg-gradient-to-r from-red-950/40 via-red-900/25 to-amber-950/30 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-red-200 shadow-[0_0_14px_rgba(239,68,68,0.22)] backdrop-blur-md transition-all duration-200 hover:border-red-400 hover:bg-red-500/20 hover:text-white hover:shadow-[0_0_22px_rgba(239,68,68,0.45)] hover:scale-[1.02] active:scale-[0.98] sm:inline-flex md:px-3.5"
           >
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-80" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]" />
             </span>
-            <span className="hidden sm:inline">{t("nav_live")}</span>
-            <span className="sm:hidden font-bold text-red-300">LIVE</span>
+            <span>{t("nav_live")}</span>
           </Link>
 
           <div className="hidden sm:block">
@@ -138,24 +137,6 @@ export function Navbar() {
         <div className="border-t border-white/8 px-6 py-6 lg:hidden">
           <div className="mb-4">
             <LanguageSwitcher />
-          </div>
-          <div className="mb-4">
-            <Link
-              href="/live"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-between rounded-xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-red-900/25 to-amber-950/30 p-3 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all hover:border-red-400 hover:bg-red-500/20 hover:text-white"
-            >
-              <span className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-80" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-                </span>
-                {t("nav_live")}
-              </span>
-              <span className="rounded bg-red-500/25 px-2 py-0.5 text-[10px] font-bold text-red-300">
-                LIVE
-              </span>
-            </Link>
           </div>
           <nav className="flex flex-col gap-3">
             {[...primary, ...more, { href: "/student/login", label: t("nav_student") }].map(

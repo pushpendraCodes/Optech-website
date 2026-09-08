@@ -1060,7 +1060,7 @@ function CameraController({
   zoomLevel?: number;
   onOrbitStop?: () => void;
 }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const orbitAngle = useRef(0);
   const prevMX = useRef(0);
   const prevMY = useRef(0);
@@ -1072,16 +1072,17 @@ function CameraController({
     const my = mouseY.current;
     const large = deskCount > 18;
     const medium = deskCount > 10;
+    const narrow = size.width < 720 || size.height / Math.max(size.width, 1) > 1.15;
+    const pull = narrow ? (large ? 1.85 : medium ? 1.55 : 1.35) : 1;
 
-    const baseX = large ? 0.4 : medium ? 0.5 : 0.55;
-    const baseY = large ? 8.8 : medium ? 7.0 : 6.2;
-    const baseZ = large ? 12.0 : medium ? 9.5 : 7.8;
-    const lookY = large ? 0.4 : 0.55;
+    const baseX = (large ? 0.25 : medium ? 0.4 : 0.5) * (narrow ? 0.2 : 1);
+    const baseY = (large ? 9.4 : medium ? 7.4 : 6.4) * pull;
+    const baseZ = (large ? 13.2 : medium ? 10.2 : 8.2) * pull;
+    const lookY = large ? (narrow ? 0.15 : 0.35) : 0.5;
 
     const zoomFactor = 1 / zoom;
 
     if (orbitActive) {
-      // Auto-stop orbit when user moves mouse significantly
       const delta = Math.abs(mx - prevMX.current) + Math.abs(my - prevMY.current);
       if (delta > 0.12 && (prevMX.current !== 0 || prevMY.current !== 0)) {
         onOrbitStop?.();
@@ -1104,18 +1105,16 @@ function CameraController({
       _lookTarget.set(0, lookY + 0.5, centerZ);
       camera.lookAt(_lookTarget);
     } else {
-      // Default parallax mode with zoom
-      const targetX = baseX + mx * 0.5;
-      const targetY = (baseY - my * 0.2) * zoomFactor;
+      const targetX = baseX + mx * (narrow ? 0.25 : 0.5);
+      const targetY = (baseY - my * 0.15) * zoomFactor;
       const targetZ = baseZ * zoomFactor;
 
       camera.position.x += (targetX - camera.position.x) * 0.04;
       camera.position.y += (targetY - camera.position.y) * 0.04;
       camera.position.z += (targetZ - camera.position.z) * 0.04;
-      _lookTarget.set(mx * 0.12, lookY, focusZ + my * 0.1);
+      _lookTarget.set(mx * 0.08, lookY, focusZ + my * 0.08);
       camera.lookAt(_lookTarget);
 
-      // Keep orbit angle synced for smooth transition
       orbitAngle.current = Math.atan2(camera.position.x, camera.position.z - focusZ);
     }
 
@@ -1123,6 +1122,22 @@ function CameraController({
     prevMY.current = my;
   });
   return null;
+}
+
+function AdaptiveCamera({ deskCount }: { deskCount: number }) {
+  const { size } = useThree();
+  const large = deskCount > 18;
+  const medium = deskCount > 10;
+  const narrow = size.width < 720 || size.height / Math.max(size.width, 1) > 1.15;
+  const pull = narrow ? (large ? 1.85 : medium ? 1.55 : 1.35) : 1;
+  const fov = (large ? 42 : medium ? 38 : 36) + (narrow ? (large ? 16 : 12) : 0);
+  const position: [number, number, number] = [
+    (large ? 0.25 : medium ? 0.4 : 0.5) * (narrow ? 0.2 : 1),
+    (large ? 9.4 : medium ? 7.4 : 6.4) * pull,
+    (large ? 13.2 : medium ? 10.2 : 8.2) * pull,
+  ];
+
+  return <PerspectiveCamera makeDefault fov={fov} position={position} />;
 }
 
 /* ─── Full 3D Scene ─── */
@@ -1173,16 +1188,9 @@ function Scene({
   );
   const handleLeave = useCallback(() => setHoveredStudent(null), [setHoveredStudent]);
 
-  const large = count > 18;
-  const medium = count > 10;
-
   return (
     <>
-      <PerspectiveCamera
-        makeDefault
-        fov={large ? 42 : medium ? 38 : 36}
-        position={large ? [0.4, 8.8, 12.0] : medium ? [0.5, 7.0, 9.5] : [0.55, 6.2, 7.8]}
-      />
+      <AdaptiveCamera deskCount={count} />
       <CameraController mouseX={mouseX} mouseY={mouseY} deskCount={count} focusZ={focusZ} orbitActive={orbitActive} zoomLevel={zoomLevel} onOrbitStop={onOrbitStop} />
 
       {/* ── Lighting ── */}
