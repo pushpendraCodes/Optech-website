@@ -5,17 +5,33 @@ import { usePathname } from "next/navigation";
 import { AURORA_CONFIG } from "@/lib/aurora";
 import { createAuroraFluid } from "@/lib/aurora-fluid";
 
+function shouldEnableAurora() {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  if (window.matchMedia("(max-width: 767px)").matches) return false;
+  if (window.matchMedia("(pointer: coarse)").matches) return false;
+  if ("connection" in navigator) {
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return false;
+  }
+  return true;
+}
+
 export function AuroraCursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
   const skip = pathname.startsWith("/student") || pathname === "/live" || pathname.startsWith("/live/");
   const [hiddenOverControl, setHiddenOverControl] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    if (!AURORA_CONFIG.enabled || skip) return;
+    setEnabled(shouldEnableAurora());
+  }, []);
+
+  useEffect(() => {
+    if (!AURORA_CONFIG.enabled || skip || !enabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let sim: ReturnType<typeof createAuroraFluid> | null = null;
     try {
@@ -33,9 +49,9 @@ export function AuroraCursorTrail() {
       }
       setHiddenOverControl(false);
     };
-  }, [skip]);
+  }, [skip, enabled]);
 
-  if (skip) return null;
+  if (skip || !enabled) return null;
 
   return (
     <canvas

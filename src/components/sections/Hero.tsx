@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EyebrowBadge } from "@/components/ui/EyebrowBadge";
 import { HudFrame } from "@/components/ui/HudFrame";
 import { DIALOGUES, FRAME_COUNT, HERO_TEXT_FADE_END, framePath } from "@/lib/hero";
+import { canvasDpr, loadImageFrames } from "@/lib/frame-loader";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export function Hero() {
@@ -27,43 +28,46 @@ export function Hero() {
 
   useEffect(() => {
     let cancelled = false;
-    let loadedCount = 0;
-    const imgs: HTMLImageElement[] = [];
+    const ac = new AbortController();
 
-    for (let i = 1; i <= FRAME_COUNT; i++) {
-      const img = new Image();
-      img.src = framePath(i);
-      img.onload = () => {
-        if (cancelled) return;
-        loadedCount++;
-        setLoadProgress(loadedCount / FRAME_COUNT);
-        if (loadedCount === FRAME_COUNT) {
-          loadedRef.current = true;
-          setLoaded(true);
-        }
-      };
-      img.onerror = () => {
-        if (cancelled) return;
-        loadedCount++;
-        setLoadProgress(loadedCount / FRAME_COUNT);
-        if (loadedCount === FRAME_COUNT) {
-          loadedRef.current = true;
-          setLoaded(true);
-        }
-      };
-      imgs.push(img);
-    }
-    framesRef.current = imgs;
+    (async () => {
+      const frames = await loadImageFrames({
+        count: FRAME_COUNT,
+        pathFor: framePath,
+        concurrency: window.innerWidth <= 768 ? 3 : 6,
+        readyAfter: 1,
+        signal: ac.signal,
+        onProgress: (loaded, total) => {
+          if (!cancelled) setLoadProgress(loaded / total);
+        },
+      });
+      if (cancelled) return;
+      framesRef.current = frames;
+      loadedRef.current = true;
+      setLoaded(true);
+    })();
 
     return () => {
       cancelled = true;
+      ac.abort();
     };
   }, []);
 
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
-    const img = framesRef.current[index];
-    if (!canvas || !img || !img.complete || !img.naturalWidth) return;
+    if (!canvas) return;
+    const frames = framesRef.current;
+    let img = frames[index];
+    if (!img?.complete || !img.naturalWidth) {
+      for (let i = index; i >= 0; i--) {
+        const candidate = frames[i];
+        if (candidate?.complete && candidate.naturalWidth) {
+          img = candidate;
+          break;
+        }
+      }
+    }
+    if (!img || !img.complete || !img.naturalWidth) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -97,13 +101,11 @@ export function Hero() {
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
+    const dpr = canvasDpr();
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
-    const ctx = canvas.getContext("2d");
-    if (ctx) ctx.scale(1, 1);
     drawFrame(lastFrameRef.current >= 0 ? lastFrameRef.current : 0);
   }, [drawFrame]);
 

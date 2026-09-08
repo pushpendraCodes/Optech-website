@@ -162,7 +162,7 @@ function PopupMediaCarousel({
                 playsInline
                 controls={i === index}
                 loop={!multi}
-                preload={i === index ? "auto" : "metadata"}
+                preload="metadata"
                 onEnded={() => {
                   if (!multi || paused) return;
                   setIndex((prev) => (prev + 1) % items.length);

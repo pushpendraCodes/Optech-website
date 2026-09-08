@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
-const FALLBACK_LOGO = "/LOGO-new.png";
+const FALLBACK_LOGO = "/logo.webp";
 
 type BrandLogoProps = {
   href?: string;

@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   applicationName: "Optech Computer Institute",
   icons: {
-    icon: [{ url: "/LOGO-new.png", type: "image/png" }],
-    shortcut: "/LOGO-new.png",
-    apple: "/LOGO-new.png",
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "32x32" }],
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
   },
 };
 

@@ -127,7 +127,7 @@ function FixedAdBox({
                   playsInline
                   loop={items.length < 2}
                   controls
-                  preload="auto"
+                  preload="metadata"
                   onEnded={() => {
                     if (items.length < 2 || paused) return;
                     setIndex((i) => (i + 1) % items.length);

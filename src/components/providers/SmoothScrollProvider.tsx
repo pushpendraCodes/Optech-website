@@ -6,6 +6,13 @@ import Lenis from "lenis";
 
 type Props = { children: React.ReactNode };
 
+function shouldEnableLenis() {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  if (window.matchMedia("(max-width: 767px)").matches) return false;
+  return true;
+}
+
 export function SmoothScrollProvider({ children }: Props) {
   const lenisRef = useRef<Lenis | null>(null);
   const pathname = usePathname();
@@ -13,7 +20,7 @@ export function SmoothScrollProvider({ children }: Props) {
   const disableSmooth = isStudentPortal || pathname === "/live" || pathname.startsWith("/live/");
 
   useEffect(() => {
-    if (disableSmooth) return;
+    if (disableSmooth || !shouldEnableLenis()) return;
 
     const lenis = new Lenis({
       lerp: 0.1,

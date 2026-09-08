@@ -27,7 +27,7 @@ export function useSiteSettings() {
     logoUrl:
       settings?.logo && typeof settings.logo === "object" && "url" in settings.logo && settings.logo.url
         ? String(settings.logo.url)
-        : "/LOGO-new.png",
+        : "/logo.webp",
     adBox1Enabled: settings?.adBox1Enabled !== false,
     adBox2Enabled: settings?.adBox2Enabled !== false,
   };
