@@ -138,6 +138,24 @@ export function Navbar() {
           <div className="mb-4">
             <LanguageSwitcher />
           </div>
+          <div className="mb-4">
+            <Link
+              href="/live"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-red-900/25 to-amber-950/30 p-3 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all hover:border-red-400 hover:bg-red-500/20 hover:text-white"
+            >
+              <span className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-80" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                </span>
+                {t("nav_live")}
+              </span>
+              <span className="rounded bg-red-500/25 px-2 py-0.5 text-[10px] font-bold text-red-300">
+                LIVE
+              </span>
+            </Link>
+          </div>
           <nav className="flex flex-col gap-3">
             {[...primary, ...more, { href: "/student/login", label: t("nav_student") }].map(
               (link) => (
