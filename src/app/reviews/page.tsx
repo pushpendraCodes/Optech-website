@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { ReviewsCta } from "@/components/site/ReviewsCta";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Google Reviews",
-  description: "Leave a Google review for Optech Computer Institute, Deori.",
-};
+export const metadata: Metadata = pageMeta({
+  title: "Google reviews",
+  description:
+    "Review Optech Computer Institute of Technology, Deori on Google. Help the next student choose a computer institute in Deori, Maharashtra.",
+  path: "/reviews",
+  keywords: ["Optech Deori Google reviews", "computer institute Deori reviews"],
+});
 
 export default function ReviewsPage() {
   return (

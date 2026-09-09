@@ -158,7 +158,7 @@ export function mapApiToBatches(rows: Record<string, unknown>[]): ClassroomBatch
           name,
           photo: String(
             student.photo ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a1a2e&color=d4a22f&size=128`,
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a1a2e&color=d4a22f&size=256`,
           ),
           course: String(student.course ?? course),
           batch: String(student.batch ?? batchName),
@@ -201,7 +201,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
     name: "Batch A",
     course: "Web Development",
     instructor: "Ankit Sharma",
-    instructorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    instructorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
     startTime: "17:00",
     endTime: "19:00",
     room: "Coding Lab 01",
@@ -213,7 +213,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-vikash",
         name: "Vikash Kumar",
-        photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -222,7 +222,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-aarav",
         name: "Aarav Sharma",
-        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -231,7 +231,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-priya",
         name: "Priya Patel",
-        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -240,7 +240,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-rohan",
         name: "Rohan Gupta",
-        photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -249,7 +249,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-sneha",
         name: "Sneha Reddy",
-        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Feb 2026",
@@ -258,7 +258,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-sahin",
         name: "Sahin Ali",
-        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -267,7 +267,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-neha",
         name: "Neha Chawla",
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Feb 2026",
@@ -276,7 +276,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-ishita",
         name: "Ishita Sen",
-        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -285,7 +285,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-muskan",
         name: "Muskan Khan",
-        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Feb 2026",
@@ -294,7 +294,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-aditya",
         name: "Aditya Menon",
-        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -303,7 +303,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-amit",
         name: "Amit Kumar",
-        photo: "https://ui-avatars.com/api/?name=Amit+Kumar&background=1a2240&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Amit+Kumar&background=1a2240&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -312,7 +312,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-anjali",
         name: "Anjali Mehta",
-        photo: "https://ui-avatars.com/api/?name=Anjali+Mehta&background=243056&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Anjali+Mehta&background=243056&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -321,7 +321,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-aryan",
         name: "Aryan Shah",
-        photo: "https://ui-avatars.com/api/?name=Aryan+Shah&background=1a3040&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Aryan+Shah&background=1a3040&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -330,7 +330,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-pooja",
         name: "Pooja Verma",
-        photo: "https://ui-avatars.com/api/?name=Pooja+Verma&background=2a1a40&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Pooja+Verma&background=2a1a40&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Feb 2026",
@@ -339,7 +339,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-nikhil",
         name: "Nikhil Rao",
-        photo: "https://ui-avatars.com/api/?name=Nikhil+Rao&background=1a2240&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Nikhil+Rao&background=1a2240&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -348,7 +348,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-karan",
         name: "Karan Pillai",
-        photo: "https://ui-avatars.com/api/?name=Karan+Pillai&background=243056&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Karan+Pillai&background=243056&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -357,7 +357,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-divya",
         name: "Divya Agarwal",
-        photo: "https://ui-avatars.com/api/?name=Divya+Agarwal&background=1a3040&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Divya+Agarwal&background=1a3040&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Feb 2026",
@@ -366,7 +366,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "student-ravi",
         name: "Ravi Thakur",
-        photo: "https://ui-avatars.com/api/?name=Ravi+Thakur&background=2a1a40&color=fff&size=128",
+        photo: "https://ui-avatars.com/api/?name=Ravi+Thakur&background=2a1a40&color=fff&size=256",
         course: "Web Development",
         batch: "Batch A",
         joinedDate: "Jan 2026",
@@ -379,7 +379,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
     name: "Batch B",
     course: "Graphic Design",
     instructor: "Rahul Verma",
-    instructorPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    instructorPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
     startTime: "15:00",
     endTime: "17:00",
     room: "Design Studio 02",
@@ -391,7 +391,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "gd-1",
         name: "Kavya Nair",
-        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80",
         course: "Graphic Design",
         batch: "Batch B",
         joinedDate: "Jan 2026",
@@ -400,7 +400,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "gd-2",
         name: "Deepak Joshi",
-        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
         course: "Graphic Design",
         batch: "Batch B",
         joinedDate: "Jan 2026",
@@ -409,7 +409,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "gd-3",
         name: "Meera Iyer",
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
         course: "Graphic Design",
         batch: "Batch B",
         joinedDate: "Jan 2026",
@@ -418,7 +418,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "gd-4",
         name: "Tanya Bose",
-        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80",
         course: "Graphic Design",
         batch: "Batch B",
         joinedDate: "Jan 2026",
@@ -427,7 +427,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "gd-5",
         name: "Yash Malhotra",
-        photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80",
         course: "Graphic Design",
         batch: "Batch B",
         joinedDate: "Jan 2026",
@@ -440,7 +440,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
     name: "Batch C",
     course: "Tally",
     instructor: "Sanjay Gupta",
-    instructorPhoto: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80",
+    instructorPhoto: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80",
     startTime: "11:00",
     endTime: "13:00",
     room: "Finance Wing 03",
@@ -452,7 +452,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "tally-1",
         name: "Harsh Trivedi",
-        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
         course: "Tally",
         batch: "Batch C",
         joinedDate: "Jan 2026",
@@ -461,7 +461,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "tally-2",
         name: "Ananya Roy",
-        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80",
         course: "Tally",
         batch: "Batch C",
         joinedDate: "Jan 2026",
@@ -470,7 +470,7 @@ export const DEFAULT_LIVE_BATCHES: ClassroomBatch[] = [
       {
         id: "tally-3",
         name: "Manish Tiwari",
-        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80",
+        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80",
         course: "Tally",
         batch: "Batch C",
         joinedDate: "Jan 2026",
@@ -516,7 +516,7 @@ export function createDemoBatch30(): ClassroomBatch {
     return {
       id: `demo-student-${i + 1}`,
       name,
-      photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${["1a2240", "1e293b", "312e81", "134e4a", "4c1d95"][i % 5]}&color=fff&size=128`,
+      photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${["1a2240", "1e293b", "312e81", "134e4a", "4c1d95"][i % 5]}&color=fff&size=256`,
       course: "Full Stack Demo",
       batch: "Demo 30",
       joinedDate: "Jan 2026",

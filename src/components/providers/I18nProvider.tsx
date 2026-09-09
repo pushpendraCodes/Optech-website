@@ -28,10 +28,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (stored && stored in MESSAGES) setLocaleState(stored);
   }, []);
 
+  useEffect(() => {
+    const htmlLang = locale === "hi" ? "hi-IN" : locale === "mr" ? "mr-IN" : "en-IN";
+    document.documentElement.lang = htmlLang;
+  }, [locale]);
+
   const setLocale = (next: Locale) => {
     setLocaleState(next);
     window.localStorage.setItem(LOCALE_KEY, next);
-    document.documentElement.lang = next === "en" ? "en" : next;
   };
 
   const value = useMemo<I18nContextValue>(

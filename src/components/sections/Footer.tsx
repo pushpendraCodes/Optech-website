@@ -16,6 +16,7 @@ const navLinks: { key: MessageKey; href: string }[] = [
   { key: "nav_gallery", href: "/gallery" },
   { key: "nav_alumni", href: "/alumni" },
   { key: "nav_jobs", href: "/jobs" },
+  { key: "nav_links", href: "/links" },
   { key: "nav_scholarship", href: "/scholarship" },
   { key: "nav_calculator", href: "/calculator" },
   { key: "nav_typing", href: "/typing" },
@@ -37,8 +38,8 @@ export function Footer() {
           <div className="flex flex-col gap-4">
             <BrandLogo href="/" height={48} />
             <p className="max-w-[38ch] font-sans text-sm leading-relaxed text-zinc-400">
-              &copy; {new Date().getFullYear()} {site.name || "Optech Computer Institute"}
-              {site.address ? ` — ${site.address}` : ""}
+              &copy; {new Date().getFullYear()} {site.name || "Optech Computer Institute of Technology"}
+              {site.address ? ` — ${site.address}` : " — Deori, Maharashtra 441901"}
             </p>
           </div>
 

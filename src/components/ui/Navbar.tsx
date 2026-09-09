@@ -28,6 +28,7 @@ export function Navbar() {
     { href: "/calculator", label: t("nav_calculator") },
     { href: "/typing", label: t("nav_typing") },
     { href: "/notices", label: t("nav_notices") },
+    { href: "/links", label: t("nav_links") },
     { href: "/reviews", label: t("review_us") },
   ];
 

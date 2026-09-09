@@ -1,48 +1,18 @@
 "use client";
 
-import { ArrowUpRight } from "@phosphor-icons/react";
-import { useGetLinksQuery } from "@/lib/api";
+import { UsefulLinksGrid } from "@/components/site/UsefulLinksGrid";
+import { useI18n } from "@/components/providers/I18nProvider";
 
-export default function LinksPage() {
-  const { data, isLoading } = useGetLinksQuery();
-  const links = (data?.data ?? []).map((link) => ({
-    href: String(link.href ?? "#"),
-    title: String(link.title ?? ""),
-    description: String(link.body ?? ""),
-  }));
+export default function StudentLinksPage() {
+  const { t } = useI18n();
 
   return (
     <div className="mx-auto max-w-[1400px]">
-      <h1 className="font-sans text-3xl font-semibold tracking-tight">Useful links</h1>
-      <p className="mt-2 font-sans text-sm text-zinc-400">Admin-curated exam portals and resources.</p>
-      {isLoading ? (
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="card-surface h-32 animate-pulse" />
-          ))}
-        </div>
-      ) : links.length === 0 ? (
-        <p className="mt-6 font-sans text-sm text-zinc-400">No links published yet.</p>
-      ) : (
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="card-surface p-5 transition-colors duration-200 hover:border-white/15"
-            >
-              <p className="font-sans text-base font-semibold">{link.title}</p>
-              <p className="mt-2 font-sans text-sm text-zinc-400">{link.description}</p>
-              <span className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
-                Open
-                <ArrowUpRight size={12} />
-              </span>
-            </a>
-          ))}
-        </div>
-      )}
+      <h1 className="font-sans text-3xl font-semibold tracking-tight">{t("st_links_title")}</h1>
+      <p className="mt-2 font-sans text-sm text-zinc-400">{t("st_links_lead")}</p>
+      <div className="mt-6">
+        <UsefulLinksGrid emptyKey="st_links_empty" />
+      </div>
     </div>
   );
 }

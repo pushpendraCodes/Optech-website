@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { EnquiryForm } from "@/components/forms/EnquiryForm";
 import { ContactDetails } from "@/components/contact/ContactDetails";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact & Enquiry",
+export const metadata: Metadata = pageMeta({
+  title: "Contact & enquiry",
   description:
-    "Contact Optech Computer Institute Deori. Submit an enquiry for admissions counseling, course details, or campus visit.",
-};
+    "Contact Optech Computer Institute of Technology, Deori. Address: Ward No. 04, Ganesh Chowk, behind Shitala Mata Mandir, Deori, Maharashtra 441901. Enquire for admissions.",
+  path: "/contact",
+  keywords: ["Optech Deori contact", "computer institute Deori address", "admission enquiry Deori"],
+});
 
 export default function ContactPage() {
   return (

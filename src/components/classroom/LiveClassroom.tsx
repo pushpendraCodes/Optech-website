@@ -14,7 +14,6 @@ import {
 import { LiveBanner } from "./LiveBanner";
 import { ProfileCard } from "./ProfileCard";
 import { EmptyState } from "./EmptyState";
-import { WallClock } from "./WallClock";
 
 const ClassroomScene = lazy(() => import("./ClassroomScene"));
 
@@ -37,128 +36,140 @@ function CanvasFallback({ color }: { color: string }) {
   );
 }
 
-function StudentRoster({
+function StudentGrid({
   batch,
-  hoveredId,
+  selectedId,
   onPick,
 }: {
   batch: ClassroomBatch;
-  hoveredId: string | null;
+  selectedId: string | null;
   onPick: (s: ClassroomStudent) => void;
 }) {
   return (
-    <div className="mt-5 sm:mt-8">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-base font-bold text-white sm:text-xl">Students in Class</h2>
-          <span
-            className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-            style={{ background: `${batch.color}33`, color: batch.accentColor }}
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      {batch.students.map((s) => {
+        const active = selectedId === s.id;
+        return (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onPick(s)}
+            className="cursor-pointer rounded-2xl border p-3 text-left transition-colors"
+            style={{
+              background: active ? `${batch.color}18` : "rgba(10,14,26,0.86)",
+              borderColor: active ? `${batch.color}66` : "rgba(255,255,255,0.08)",
+            }}
           >
-            {batch.students.length} enrolled
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-[11px] text-white/45">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" /> Active
-          </span>
-        </div>
-      </div>
-      <div
-        className="rounded-2xl border border-white/8 p-3 sm:p-4"
-        style={{ background: "rgba(8,12,24,0.72)" }}
-      >
-        <div className="flex flex-wrap gap-2.5">
-          {batch.students.map((s) => {
-            const active = hoveredId === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onMouseEnter={() => onPick(s)}
-                onFocus={() => onPick(s)}
-                onClick={() => onPick(s)}
-                className="inline-flex items-center gap-2.5 rounded-full border px-2.5 py-1.5 transition-all cursor-pointer"
-                style={{
-                  background: active ? `${batch.color}22` : "rgba(18,24,40,0.9)",
-                  borderColor: active ? `${batch.color}66` : "rgba(255,255,255,0.08)",
-                  boxShadow: active ? `0 0 18px ${batch.color}33` : "none",
+            <span className="relative mx-auto mb-3 block aspect-square w-full max-w-[140px] overflow-hidden rounded-full border-2 border-white/12">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={s.photo}
+                alt={s.name}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    s.name,
+                  )}&background=1a2240&color=fff&size=160`;
                 }}
-              >
-                <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 border-white/10">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={s.photo}
-                    alt={s.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        s.name,
-                      )}&background=1a2240&color=fff&size=72`;
-                    }}
-                  />
-                  <span className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full border-2 border-[#0a1020] bg-emerald-400" />
-                </span>
-                <span className="pr-1 text-sm font-medium text-white">{s.name.split(" ")[0]}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              />
+              <span className="absolute right-1 bottom-1 h-3 w-3 rounded-full border-2 border-[#0a1020] bg-emerald-400" />
+            </span>
+            <p className="truncate text-center text-sm font-bold text-white sm:text-base">{s.name}</p>
+            <p className="mt-0.5 truncate text-center text-[11px] font-medium text-white/50">
+              {s.course || batch.course}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-function ScheduleStrip({
+function CourseTicker({
   batches,
+  nextBatch,
   activeId,
   onSelect,
 }: {
   batches: ClassroomBatch[];
+  nextBatch: ClassroomBatch | null;
   activeId: string;
   onSelect: (b: ClassroomBatch) => void;
 }) {
-  if (batches.length === 0) return null;
+  const items = useMemo(() => {
+    const chips: Array<{
+      id: string;
+      kind: "live" | "next" | "course";
+      label: string;
+      meta: string;
+      batch: ClassroomBatch;
+    }> = [];
+
+    for (const b of batches) {
+      const live = isBatchLiveNow(b);
+      chips.push({
+        id: `${b.id}-course`,
+        kind: live ? "live" : "course",
+        label: live ? `LIVE NOW · ${b.course}` : `New course · ${b.course}`,
+        meta: `${b.name} · ${b.students.length} enrolled · ${formatTime(b.startTime)}–${formatTime(b.endTime)}`,
+        batch: b,
+      });
+    }
+
+    if (nextBatch && !isBatchLiveNow(nextBatch)) {
+      chips.unshift({
+        id: `${nextBatch.id}-next`,
+        kind: "next",
+        label: `Next batch · ${nextBatch.course}`,
+        meta: `${nextBatch.name} starts ${formatTime(nextBatch.startTime)} · ${nextBatch.students.length} already enrolled`,
+        batch: nextBatch,
+      });
+    }
+
+    if (chips.length === 0) return [];
+    return [...chips, ...chips];
+  }, [batches, nextBatch]);
+
+  if (items.length === 0) return null;
+
   return (
-    <div className="mt-5 sm:mt-8">
-      <p className="mb-3 text-[11px] font-semibold tracking-[0.2em] text-white/35 uppercase">
-        Today&apos;s Schedule
-      </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {batches.map((b) => {
-          const active = b.id === activeId;
-          const live = Boolean(b.isLive);
-          return (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => onSelect(b)}
-              className="rounded-2xl border p-4 text-left transition-all cursor-pointer"
-              style={{
-                background: active ? `${b.color}14` : "rgba(10,14,26,0.8)",
-                borderColor: active ? `${b.color}55` : "rgba(255,255,255,0.08)",
-                boxShadow: active ? `0 0 28px ${b.color}18` : "none",
-              }}
-            >
-              <div className="mb-1 flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: live ? "#22c55e" : b.color }} />
-                <span className="text-base font-bold text-white">{b.course}</span>
-                {live ? (
-                  <span className="rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-red-400 uppercase">
-                    Live
-                  </span>
-                ) : null}
-              </div>
-              <p className="text-xs text-white/40">
-                {b.name} · {b.room}
-              </p>
-              <p className="mt-2 text-sm font-semibold" style={{ color: b.accentColor }}>
-                {formatTime(b.startTime)} – {formatTime(b.endTime)}
-              </p>
-              <p className="mt-3 text-xs text-white/35">{b.students.length} students</p>
-            </button>
-          );
-        })}
+    <div className="mb-5 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-amber-950/25 via-[#0a1020]/90 to-sky-950/25">
+      <div className="flex items-center gap-3 border-b border-white/8 px-3 py-1.5">
+        <span className="shrink-0 rounded-full bg-[#D4A22F]/15 px-2 py-0.5 font-mono text-[9px] font-bold tracking-[0.22em] text-[#F6CB65] uppercase">
+          Today
+        </span>
+        <p className="truncate text-[11px] text-white/45">
+          New courses · next batch · enrolled students
+        </p>
+      </div>
+      <div className="overflow-hidden py-2.5">
+        <div className="live-course-marquee flex w-max gap-3">
+          {items.map((item, i) => {
+            const active = item.batch.id === activeId;
+            const tone =
+              item.kind === "live"
+                ? "border-red-400/40 bg-red-500/15 text-red-200"
+                : item.kind === "next"
+                  ? "border-[#D4A22F]/40 bg-[#D4A22F]/12 text-[#F6CB65]"
+                  : "border-sky-400/25 bg-sky-500/10 text-sky-200";
+            return (
+              <button
+                key={`${item.id}-${i}`}
+                type="button"
+                onClick={() => onSelect(item.batch)}
+                className={`inline-flex cursor-pointer items-center gap-2.5 rounded-full border px-3.5 py-1.5 whitespace-nowrap transition-colors ${tone} ${
+                  active ? "ring-1 ring-white/25" : ""
+                }`}
+              >
+                <span className="text-[11px] font-bold tracking-wide uppercase">{item.label}</span>
+                <span className="h-3 w-px bg-white/20" />
+                <span className="text-[11px] text-white/70">{item.meta}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -183,30 +194,9 @@ export function LiveClassroom({
   const [nextBatch, setNextBatch] = useState<ClassroomBatch | null>(() => getNextBatch(todayBatches));
   const [selectedBatch, setSelectedBatch] = useState<ClassroomBatch | null>(() => pickPrimaryBatch(todayBatches));
   const [hoveredStudent, setHoveredStudent] = useState<ClassroomStudent | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [orbitActive, setOrbitActive] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1.0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const sync = () => setIsMobile(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  const defaultZoom = useMemo(() => {
-    if (!isMobile || !selectedBatch) return 1;
-    const n = selectedBatch.students.length;
-    if (n > 18) return 0.72;
-    if (n > 10) return 0.85;
-    return 0.95;
-  }, [isMobile, selectedBatch?.id, selectedBatch?.students.length]);
-
-  useEffect(() => {
-    setZoomLevel(defaultZoom);
-  }, [defaultZoom]);
+  const [show3d, setShow3d] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(1.1);
 
   const syncSelection = useCallback((batches: ClassroomBatch[]) => {
     setNextBatch(getNextBatch(batches));
@@ -215,7 +205,6 @@ export function LiveClassroom({
         const found = batches.find((b) => b.id === prev.id);
         if (found && isBatchLiveNow(found)) return { ...found, isLive: true };
         const live = getActiveBatches(batches);
-        // Keep manual selection if still on today's list and nothing else is live
         if (found && live.length === 0) return { ...found, isLive: false };
       }
       return pickPrimaryBatch(batches);
@@ -226,32 +215,28 @@ export function LiveClassroom({
     syncSelection(todayBatches);
   }, [todayBatches, syncSelection]);
 
-  useEffect(() => {
-    const interval = setInterval(() => syncSelection(todayBatches), 1000);
-    return () => clearInterval(interval);
-  }, [todayBatches, syncSelection]);
-
   const handleBatchSelect = useCallback(
     (batch: ClassroomBatch) => {
-      if (!selectedBatch || batch.id === selectedBatch.id) return;
-      setIsTransitioning(true);
+      if (selectedBatch && batch.id === selectedBatch.id) return;
       setHoveredStudent(null);
-      setTimeout(() => {
-        setSelectedBatch({ ...batch, isLive: isBatchLiveNow(batch) });
-        setTimeout(() => setIsTransitioning(false), 400);
-      }, 250);
+      setSelectedBatch({ ...batch, isLive: isBatchLiveNow(batch) });
+      setShowBanner(true);
     },
     [selectedBatch],
   );
 
+  const handleStudentPick = useCallback((student: ClassroomStudent) => {
+    setHoveredStudent((prev) => (prev?.id === student.id ? null : student));
+  }, []);
+
   const handleStudentHover = useCallback((student: ClassroomStudent | null) => {
-    setHoveredStudent((prev) => (prev?.id === student?.id ? prev : student));
+    setHoveredStudent(student);
   }, []);
 
   if (todayBatches.length === 0 || !selectedBatch) {
     return (
       <section
-        className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center px-4 pt-24 md:pt-28 pb-16"
+        className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center px-4 pt-28 pb-16"
         style={{ background: "#050810" }}
       >
         <EmptyState nextBatch={nextBatch} />
@@ -260,24 +245,21 @@ export function LiveClassroom({
   }
 
   const isLive = isBatchLiveNow(selectedBatch);
-  const showClassroom = true;
 
   return (
     <section
-      className="relative min-h-[calc(100vh-5rem)] w-full overflow-x-hidden pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16"
+      className="relative min-h-dvh w-full overflow-x-hidden pt-28 md:pt-32 pb-12"
       style={{ background: "#050810" }}
     >
-      {/* Background radial glow */}
       <div
-        className="pointer-events-none absolute inset-0 transition-all duration-1000"
+        className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 50% 0%, ${selectedBatch.color}18 0%, transparent 60%)`,
+          background: `radial-gradient(ellipse at 50% 0%, ${selectedBatch.color}14 0%, transparent 55%)`,
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-3 sm:px-6">
-        {/* Header */}
-        <div className="mb-3 flex flex-col justify-between gap-3 sm:mb-4 sm:flex-row sm:items-end">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <div className="mb-1.5 flex items-center gap-2.5">
               {isLive && (
@@ -290,8 +272,8 @@ export function LiveClassroom({
                 {showingDemo ? "Demo Preview · 30 Students" : isLive ? "Live Classroom Session" : "Virtual Classroom"}
               </span>
             </div>
-            <h1 className="text-xl leading-tight font-black text-white sm:text-3xl">
-              3D Interactive{" "}
+            <h1 className="text-2xl leading-tight font-black text-white sm:text-3xl">
+              Virtual{" "}
               <span
                 className="bg-clip-text text-transparent"
                 style={{
@@ -301,217 +283,152 @@ export function LiveClassroom({
                 Classroom
               </span>
             </h1>
-            <p className="mt-1 hidden text-sm text-white/40 sm:block">
-              Hover desks to view student profiles · Move mouse to explore the 3D scene
-            </p>
-            <p className="mt-1 text-xs text-white/40 sm:hidden">
-              Tap a desk or student below to view their profile
+            <p className="mt-1 text-sm text-white/45">
+              {selectedBatch.students.length} students · {selectedBatch.course}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setHoveredStudent(null);
-              if (showingDemo) {
-                setDemoMode(false);
-                onExitDemo?.();
-              } else {
-                setDemoMode(true);
-              }
-            }}
-            className="shrink-0 cursor-pointer self-start rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors sm:self-auto sm:px-4 sm:py-2"
-            style={{
-              borderColor: showingDemo ? "rgba(96,165,250,0.55)" : "rgba(255,255,255,0.12)",
-              background: showingDemo ? "rgba(59,130,246,0.18)" : "rgba(255,255,255,0.04)",
-              color: showingDemo ? "#93c5fd" : "rgba(255,255,255,0.55)",
-            }}
-          >
-            {showingDemo ? "Exit demo" : "Preview 30 students"}
-          </button>
-        </div>
-
-        {/* Mobile: batch banner above classroom (not over canvas) */}
-        {isMobile ? (
-          <div className="mb-3">
-            <LiveBanner batch={selectedBatch} isLive={isLive} compact />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShow3d((v) => !v);
+                setHoveredStudent(null);
+              }}
+              className="cursor-pointer rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em]"
+              style={{
+                borderColor: show3d ? "rgba(96,165,250,0.55)" : "rgba(255,255,255,0.12)",
+                background: show3d ? "rgba(59,130,246,0.18)" : "rgba(255,255,255,0.04)",
+                color: show3d ? "#93c5fd" : "rgba(255,255,255,0.7)",
+              }}
+            >
+              {show3d ? "Close 3D" : "3D Classroom View"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHoveredStudent(null);
+                setShow3d(false);
+                if (showingDemo) {
+                  setDemoMode(false);
+                  onExitDemo?.();
+                } else {
+                  setDemoMode(true);
+                }
+              }}
+              className="cursor-pointer rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em]"
+              style={{
+                borderColor: showingDemo ? "rgba(96,165,250,0.55)" : "rgba(255,255,255,0.12)",
+                background: showingDemo ? "rgba(59,130,246,0.18)" : "rgba(255,255,255,0.04)",
+                color: showingDemo ? "#93c5fd" : "rgba(255,255,255,0.55)",
+              }}
+            >
+              {showingDemo ? "Exit demo" : "Preview 30 students"}
+            </button>
           </div>
-        ) : null}
-
-        {/* ━━━━━━━━━ 3D Classroom Container ━━━━━━━━━ */}
-        <div
-          className="relative overflow-hidden rounded-2xl transition-all duration-700 sm:rounded-3xl"
-          style={{
-            height: isMobile
-              ? "min(62vh, 520px)"
-              : "clamp(560px, 75vh, 840px)",
-            minHeight: isMobile ? 360 : undefined,
-            border: `1px solid ${selectedBatch.color}33`,
-            boxShadow: `0 0 0 1px rgba(255,255,255,0.06), 0 32px 80px rgba(0,0,0,0.85), 0 0 50px ${selectedBatch.color}12`,
-            opacity: isTransitioning ? 0 : 1,
-            transform: isTransitioning ? "scale(0.98)" : "scale(1)",
-          }}
-        >
-          {showClassroom ? (
-            <>
-              {/* Three.js scene — keep below HUD overlays */}
-              <div className="absolute inset-0 z-0">
-                <Suspense fallback={<CanvasFallback color={selectedBatch.color} />}>
-                  <ClassroomScene
-                    batch={selectedBatch}
-                    onStudentHover={handleStudentHover}
-                    hoveredStudent={hoveredStudent}
-                    orbitActive={orbitActive}
-                    zoomLevel={zoomLevel}
-                    onOrbitStop={() => setOrbitActive(false)}
-                  />
-                </Suspense>
-              </div>
-
-              {/* HUD layer above canvas */}
-              <div className="pointer-events-none absolute inset-0 z-50">
-                {/* Desktop: banner over canvas */}
-                {!isMobile ? (
-                  <div className="pointer-events-auto absolute top-4 left-4 max-w-[min(340px,calc(100%-7rem))] sm:top-5 sm:left-5">
-                    <LiveBanner batch={selectedBatch} isLive={isLive} />
-                  </div>
-                ) : null}
-
-                {/* Clock — smaller / hidden on very narrow */}
-                {!isMobile ? (
-                  <div className="absolute top-4 right-4 sm:top-5 sm:right-5">
-                    <WallClock size={92} />
-                  </div>
-                ) : (
-                  <div className="absolute top-2 right-2 opacity-90">
-                    <WallClock size={48} />
-                  </div>
-                )}
-
-                {/* Desk count — avoid overlapping banner on desktop; sit top-left on mobile */}
-                <div
-                  className={
-                    isMobile
-                      ? "absolute top-2 left-2"
-                      : "absolute inset-x-0 top-16 flex items-center justify-between px-5"
-                  }
-                >
-                  <span className="rounded-full border border-white/10 bg-black/55 px-2.5 py-1 text-[10px] text-white/55 backdrop-blur-md sm:px-3 sm:text-[11px]">
-                    {selectedBatch.students.length} desks
-                    {!isMobile ? ` · ${selectedBatch.course}` : ""}
-                  </span>
-                </div>
-
-                {/* Profile: desktop right panel / mobile bottom sheet */}
-                {hoveredStudent && !isMobile ? (
-                  <div className="pointer-events-auto absolute top-24 right-5 max-w-[300px] sm:top-28 sm:right-6">
-                    <ProfileCard
-                      student={hoveredStudent}
-                      batch={selectedBatch}
-                      onClose={() => setHoveredStudent(null)}
-                    />
-                  </div>
-                ) : null}
-
-                {/* ━━━ Bottom bar: camera controls only ━━━ */}
-                <div className={`absolute left-2 right-2 sm:left-5 sm:right-auto ${isMobile ? "bottom-2" : "bottom-3 sm:bottom-5"}`}>
-                  <div className="pointer-events-auto">
-                    <div className="inline-flex max-w-full flex-wrap items-center gap-0.5 rounded-full border border-white/20 bg-[#0a1020]/92 p-1 shadow-[0_8px_32px_rgba(0,0,0,0.65)] backdrop-blur-xl sm:gap-1 sm:p-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setOrbitActive((v) => !v)}
-                        className={`flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-colors duration-200 sm:gap-1.5 sm:px-3 sm:text-[11px] ${
-                          orbitActive
-                            ? "bg-white/20 text-white"
-                            : "text-white/75 hover:bg-white/10 hover:text-white"
-                        }`}
-                      >
-                        <svg
-                          className={`h-3.5 w-3.5 ${orbitActive ? "animate-spin" : ""}`}
-                          style={orbitActive ? { animationDuration: "3s" } : undefined}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        {orbitActive ? "Orbiting…" : isMobile ? "Rotate" : "Rotate View"}
-                      </button>
-                      <div className="h-4 w-px bg-white/15" />
-                      <button
-                        type="button"
-                        onClick={() => setZoomLevel((v) => Math.max(0.5, +(v - 0.15).toFixed(2)))}
-                        className="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                        aria-label="Zoom out"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM8 11h6" />
-                        </svg>
-                      </button>
-                      <span className="min-w-[36px] text-center font-mono text-[10px] font-bold text-white/65">
-                        {Math.round(zoomLevel * 100)}%
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setZoomLevel((v) => Math.min(1.5, +(v + 0.15).toFixed(2)))}
-                        className="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                        aria-label="Zoom in"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                        </svg>
-                      </button>
-                      <div className="h-4 w-px bg-white/15" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOrbitActive(false);
-                          setZoomLevel(defaultZoom);
-                        }}
-                        className="flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
-                        aria-label="Reset camera"
-                      >
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                        </svg>
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <EmptyState nextBatch={nextBatch} />
-          )}
         </div>
 
-        {/* Mobile profile sheet below canvas */}
-        {hoveredStudent && isMobile ? (
-          <div className="mt-3">
-            <ProfileCard
-              student={hoveredStudent}
+        {showBanner ? (
+          <div className="mb-5">
+            <LiveBanner
               batch={selectedBatch}
-              onClose={() => setHoveredStudent(null)}
-              className="w-full max-w-none"
+              isLive={isLive}
+              compact
+              onClose={() => setShowBanner(false)}
             />
           </div>
         ) : null}
 
-        {/* ━━━ Student Roster Below Scene ━━━ */}
-        {showClassroom && (
-          <StudentRoster
-            batch={selectedBatch}
-            hoveredId={hoveredStudent?.id ?? null}
-            onPick={handleStudentHover}
-          />
-        )}
-
-        {/* ━━━ Schedule Grid Below ━━━ */}
-        <ScheduleStrip
+        <CourseTicker
           batches={todayBatches}
+          nextBatch={nextBatch}
           activeId={selectedBatch.id}
           onSelect={handleBatchSelect}
         />
+
+        {show3d ? (
+          <div
+            className="relative overflow-hidden rounded-2xl sm:rounded-3xl"
+            style={{
+              height: "min(72vh, 760px)",
+              minHeight: 420,
+              border: `1px solid ${selectedBatch.color}33`,
+            }}
+          >
+            <div className="absolute inset-0 z-0">
+              <Suspense fallback={<CanvasFallback color={selectedBatch.color} />}>
+                <ClassroomScene
+                  batch={selectedBatch}
+                  onStudentHover={handleStudentHover}
+                  hoveredStudent={hoveredStudent}
+                  orbitActive
+                  zoomLevel={zoomLevel}
+                />
+              </Suspense>
+            </div>
+            <div className="pointer-events-none absolute inset-0 z-50">
+              <button
+                type="button"
+                onClick={() => setShow3d(false)}
+                aria-label="Close 3D view"
+                className="pointer-events-auto absolute top-3 right-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/80 backdrop-blur-md hover:text-white"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="pointer-events-auto absolute bottom-3 left-3">
+                <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-[#0a1020]/92 p-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel((v) => Math.max(0.7, +(v - 0.15).toFixed(2)))}
+                    className="cursor-pointer rounded-full p-1.5 text-white/70 hover:text-white"
+                    aria-label="Zoom out"
+                  >
+                    −
+                  </button>
+                  <span className="min-w-9 text-center font-mono text-[10px] text-white/65">
+                    {Math.round(zoomLevel * 100)}%
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel((v) => Math.min(1.8, +(v + 0.15).toFixed(2)))}
+                    className="cursor-pointer rounded-full p-1.5 text-white/70 hover:text-white"
+                    aria-label="Zoom in"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {hoveredStudent ? (
+                <div className="pointer-events-auto absolute top-14 right-3 max-w-72">
+                  <ProfileCard
+                    student={hoveredStudent}
+                    batch={selectedBatch}
+                    onClose={() => setHoveredStudent(null)}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <StudentGrid
+            batch={selectedBatch}
+            selectedId={hoveredStudent?.id ?? null}
+            onPick={handleStudentPick}
+          />
+        )}
+
+        {hoveredStudent && !show3d ? (
+          <div className="mt-4">
+            <ProfileCard
+              student={hoveredStudent}
+              batch={selectedBatch}
+              onClose={() => setHoveredStudent(null)}
+              className="w-full max-w-xl"
+            />
+          </div>
+        ) : null}
+
       </div>
     </section>
   );

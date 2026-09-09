@@ -224,11 +224,12 @@ export function Hero() {
           style={{ transition: "opacity 80ms linear" }}
         >
           <EyebrowBadge>{t("hero_eyebrow")}</EyebrowBadge>
-          <h1 className="max-w-[16ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
+          <h1 className="max-w-[22ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
             {t("hero_name")}
             <br />
             <span className="text-accent">{t("hero_institute")}</span>
           </h1>
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-zinc-400">{t("hero_place")}</p>
           <p className="max-w-[42ch] font-sans text-sm leading-relaxed text-zinc-400 md:text-base">
             {t("hero_lead")}
           </p>

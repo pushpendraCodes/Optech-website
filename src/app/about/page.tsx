@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { AboutView } from "./AboutView";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About Us",
+export const metadata: Metadata = pageMeta({
+  title: "About us",
   description:
-    "Learn about Optech Computer Institute of Technology, Deori — 30+ years of excellence in technical education since 1994.",
-};
+    "About Optech Computer Institute of Technology, Deori — ISO-certified computer education since 1994 at Ganesh Chowk, Deori, Maharashtra 441901.",
+  path: "/about",
+  keywords: ["about Optech Deori", "computer institute history Deori"],
+});
 
 export default function AboutPage() {
   return <AboutView />;

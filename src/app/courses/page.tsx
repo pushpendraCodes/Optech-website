@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { CourseCatalog } from "@/components/catalog/CourseCatalog";
 import { CoursesCta } from "./CoursesCta";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Courses",
+export const metadata: Metadata = pageMeta({
+  title: "Computer courses",
   description:
-    "Explore industry-recognized courses at Optech Deori — filter by category, duration, fee, and mode. Enroll online or at campus.",
-};
+    "Explore computer courses at Optech Computer Institute of Technology, Deori — PGDCA, Tally, typing, web development, and more. Filter by fee, duration, and mode.",
+  path: "/courses",
+  keywords: ["computer courses Deori", "PGDCA Deori", "Tally course Deori"],
+});
 
 export default function CoursesPage() {
   return (

@@ -11,13 +11,25 @@ import {
   type MutableRefObject,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
+import { Billboard, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import type { ClassroomBatch as Batch, ClassroomStudent as Student } from "./types";
 
 /* ─── Constants ─── */
 const MAX_DESKS = 30;
 const _v3 = new THREE.Vector3();
+
+function hiResPhoto(url: string) {
+  if (!url) return url;
+  if (url.includes("ui-avatars.com")) {
+    if (/[?&]size=/.test(url)) return url.replace(/([?&]size=)\d+/, "$1256");
+    return `${url}${url.includes("?") ? "&" : "?"}size=256`;
+  }
+  if (url.includes("images.unsplash.com")) {
+    return url.replace(/([?&]w=)\d+/, "$1400");
+  }
+  return url;
+}
 
 function initials(name: string) {
   return name
@@ -28,34 +40,71 @@ function initials(name: string) {
     .join("");
 }
 
+const NAME_TEX_W = 1024;
+const NAME_TEX_H = 280;
+const AVATAR_TEX = 512;
+
+function sharpenTexture(tex: THREE.CanvasTexture) {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.generateMipmaps = false;
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
+}
+
 /* ─── Name plate texture (canvas — no remote font load) ─── */
 function useNameTexture(name: string, accent: string, active: boolean) {
   return useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 640;
-    canvas.height = 180;
+    canvas.width = NAME_TEX_W;
+    canvas.height = NAME_TEX_H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    const first = name.split(/\s+/)[0] || name;
-    ctx.clearRect(0, 0, 640, 180);
-    ctx.fillStyle = active ? "#1a2748" : "#152038";
-    ctx.fillRect(0, 0, 640, 180);
-    ctx.strokeStyle = active ? accent : "#6b8cff";
-    ctx.lineWidth = 10;
-    ctx.strokeRect(6, 6, 628, 168);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 96px system-ui, Segoe UI, sans-serif";
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    const full = parts.slice(0, 2).join(" ");
+    const label = (full.length <= 16 ? full : parts[0] || name).slice(0, 16);
+    ctx.clearRect(0, 0, NAME_TEX_W, NAME_TEX_H);
+    ctx.fillStyle = active ? "rgba(18, 38, 78, 0.94)" : "rgba(10, 18, 38, 0.92)";
+    roundRect(ctx, 8, 8, NAME_TEX_W - 16, NAME_TEX_H - 16, 36);
+    ctx.fill();
+    ctx.strokeStyle = active ? accent : "#93c5fd";
+    ctx.lineWidth = 14;
+    roundRect(ctx, 8, 8, NAME_TEX_W - 16, NAME_TEX_H - 16, 36);
+    ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.shadowColor = "rgba(0,0,0,0.85)";
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 3;
-    ctx.fillText(first.slice(0, 12), 320, 96);
+    ctx.font = `800 ${label.length > 10 ? 112 : 148}px system-ui, Segoe UI, sans-serif`;
+    ctx.lineWidth = 18;
+    ctx.strokeStyle = "rgba(0,0,0,0.85)";
+    ctx.strokeText(label, NAME_TEX_W / 2, NAME_TEX_H / 2 + 6);
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = "rgba(0,0,0,0.9)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 4;
+    ctx.fillText(label, NAME_TEX_W / 2, NAME_TEX_H / 2 + 6);
     const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.needsUpdate = true;
+    sharpenTexture(tex);
     return tex;
   }, [name, accent, active]);
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
 }
 
 /* ─── Avatar Texture (student photo circle) ─── */
@@ -67,11 +116,11 @@ function useAvatarTexture(photo: string, name: string, accent: string, active: b
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = AVATAR_TEX;
+    canvas.height = AVATAR_TEX;
     canvasRef.current = canvas;
     const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    sharpenTexture(tex);
     setTexture(tex);
 
     const img = new Image();
@@ -79,7 +128,7 @@ function useAvatarTexture(photo: string, name: string, accent: string, active: b
     imgRef.current = img;
     img.onload = () => setImgReady((n) => n + 1);
     img.onerror = () => setImgReady((n) => n + 1);
-    img.src = photo;
+    img.src = hiResPhoto(photo);
 
     return () => {
       tex.dispose();
@@ -95,42 +144,46 @@ function useAvatarTexture(photo: string, name: string, accent: string, active: b
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, 256, 256);
+    const s = AVATAR_TEX;
+    const cx = s / 2;
+    const cy = s / 2;
+    const radius = s * 0.46;
+    ctx.clearRect(0, 0, s, s);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     const img = imgRef.current;
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(128, 128, 118, 0, Math.PI * 2);
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.closePath();
       ctx.clip();
-      const size = Math.min(img.width, img.height);
-      const sx = (img.width - size) / 2;
-      const sy = (img.height - size) / 2;
-      ctx.drawImage(img, sx, sy, size, size, 8, 8, 240, 240);
+      const size = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth - size) / 2;
+      const sy = (img.naturalHeight - size) / 2;
+      ctx.drawImage(img, sx, sy, size, size, 0, 0, s, s);
       ctx.restore();
     } else {
       ctx.beginPath();
-      ctx.arc(128, 128, 118, 0, Math.PI * 2);
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.fillStyle = "#1a2240";
       ctx.fill();
       ctx.fillStyle = "#e8eefc";
-      ctx.font = "bold 84px system-ui, sans-serif";
+      ctx.font = "bold 168px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(initials(name) || "?", 128, 136);
+      ctx.fillText(initials(name) || "?", cx, cy + 16);
     }
-    // Ring
     ctx.beginPath();
-    ctx.arc(128, 128, 118, 0, Math.PI * 2);
-    ctx.lineWidth = active ? 14 : 10;
-    ctx.strokeStyle = active ? accent : "#4f74d4";
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.lineWidth = active ? 28 : 20;
+    ctx.strokeStyle = active ? accent : "#93c5fd";
     ctx.stroke();
-    // Status dot
     ctx.beginPath();
-    ctx.arc(198, 58, 20, 0, Math.PI * 2);
+    ctx.arc(s * 0.78, s * 0.22, s * 0.08, 0, Math.PI * 2);
     ctx.fillStyle = "#22c55e";
     ctx.fill();
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 10;
     ctx.strokeStyle = "#0b1224";
     ctx.stroke();
     texture.needsUpdate = true;
@@ -436,8 +489,8 @@ function StudentFigure({
         </mesh>
       </group>
       {/* Head */}
-      <mesh position={[0, 0.52, -0.03]}>
-        <sphereGeometry args={[0.09, 12, 10]} />
+      <mesh position={[0, 0.56, -0.03]}>
+        <sphereGeometry args={[0.11, 14, 12]} />
         <meshStandardMaterial color="#d4a574" roughness={0.7} />
       </mesh>
       {/* Hair */}
@@ -486,6 +539,7 @@ function StudentDesk({
   isHovered,
   accentColor,
   shirtColor,
+  portraitOnly,
   onHover,
   onLeave,
   onSelect,
@@ -495,6 +549,7 @@ function StudentDesk({
   isHovered: boolean;
   accentColor: string;
   shirtColor: string;
+  portraitOnly?: boolean;
   onHover: (student: Student) => void;
   onLeave: () => void;
   onSelect: (student: Student) => void;
@@ -535,6 +590,37 @@ function StudentDesk({
         onSelect(student);
       }}
     >
+      {portraitOnly ? (
+        <>
+          <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.62, 28]} />
+            <meshBasicMaterial color={rim} transparent opacity={isHovered ? 0.22 : 0.08} depthWrite={false} />
+          </mesh>
+          <Billboard follow position={[0, 1.05, 0]}>
+            {avatarTex ? (
+              <mesh>
+                <circleGeometry args={[0.52, 48]} />
+                <meshBasicMaterial map={avatarTex} transparent depthWrite={false} toneMapped={false} />
+              </mesh>
+            ) : null}
+            {isHovered ? (
+              <mesh position={[0, 0, -0.01]}>
+                <ringGeometry args={[0.54, 0.62, 48]} />
+                <meshBasicMaterial color={accentColor} transparent opacity={0.7} depthWrite={false} />
+              </mesh>
+            ) : null}
+            {nameTex ? (
+              <mesh position={[0, -0.78, 0]}>
+                <planeGeometry args={[1.55, 0.42]} />
+                <meshBasicMaterial map={nameTex} transparent depthWrite={false} toneMapped={false} />
+              </mesh>
+            ) : null}
+          </Billboard>
+        </>
+      ) : null}
+
+      {!portraitOnly ? (
+      <>
       {/* ──── DESK ──── */}
       {/* Desk legs */}
       {[[-0.38, 0, -0.2], [0.38, 0, -0.2], [-0.38, 0, 0.2], [0.38, 0, 0.2]].map((lp, i) => (
@@ -600,33 +686,32 @@ function StudentDesk({
 
       {/* ──── Floating Avatar Circle (above student head) ──── */}
       {avatarTex ? (
-        <group position={[0, 1.15, 0.36]}>
-          {/* Avatar photo circle - tilted toward camera */}
-          <mesh rotation={[-0.35, 0, 0]}>
-            <circleGeometry args={[0.18, 32]} />
+        <group position={[0, 1.42, 0.38]}>
+          <mesh rotation={[-0.28, 0, 0]}>
+            <circleGeometry args={[0.34, 48]} />
             <meshBasicMaterial map={avatarTex} transparent depthWrite={false} toneMapped={false} />
           </mesh>
-          {/* Pulsing ring behind avatar when hovered */}
           {isHovered && (
-            <mesh rotation={[-0.35, 0, 0]} position={[0, 0, -0.01]}>
-              <ringGeometry args={[0.19, 0.23, 32]} />
-              <meshBasicMaterial color={accentColor} transparent opacity={0.6} depthWrite={false} />
+            <mesh rotation={[-0.28, 0, 0]} position={[0, 0, -0.01]}>
+              <ringGeometry args={[0.35, 0.42, 48]} />
+              <meshBasicMaterial color={accentColor} transparent opacity={0.65} depthWrite={false} />
             </mesh>
           )}
-          {/* Connecting line from avatar to student */}
-          <mesh position={[0, -0.24, 0]}>
-            <cylinderGeometry args={[0.004, 0.004, 0.45, 4]} />
-            <meshBasicMaterial color={rim} transparent opacity={isHovered ? 0.5 : 0.2} />
+          <mesh position={[0, -0.38, 0]}>
+            <cylinderGeometry args={[0.006, 0.006, 0.52, 6]} />
+            <meshBasicMaterial color={rim} transparent opacity={isHovered ? 0.55 : 0.25} />
           </mesh>
         </group>
       ) : null}
 
       {/* ──── Name plate (canvas texture — readable + no font fetch) ──── */}
       {nameTex ? (
-        <mesh position={[0, 0.93, 0.36]} rotation={[-0.35, 0, 0]}>
-          <planeGeometry args={[0.58, 0.2]} />
+        <mesh position={[0, 0.98, 0.4]} rotation={[-0.22, 0, 0]}>
+          <planeGeometry args={[0.98, 0.3]} />
           <meshBasicMaterial map={nameTex} transparent depthWrite={false} toneMapped={false} />
         </mesh>
+      ) : null}
+      </>
       ) : null}
     </group>
   );
@@ -1042,7 +1127,37 @@ function ClassroomRoom({ accentColor }: { accentColor: string }) {
   );
 }
 
-/* ─── Camera Controller (Parallax + Orbit + Zoom) ─── */
+function cameraFraming(deskCount: number, width: number, height: number, portrait = false) {
+  const large = deskCount > 18;
+  const medium = deskCount > 10;
+  const narrow = width < 720 || height / Math.max(width, 1) > 1.15;
+  if (portrait) {
+    const pull = narrow ? (large ? 1.22 : medium ? 1.1 : 1.0) : large ? 1.02 : 0.92;
+    return {
+      large,
+      medium,
+      narrow,
+      pull,
+      baseX: 0,
+      baseY: (large ? 7.6 : medium ? 6.2 : 5.2) * pull,
+      baseZ: (large ? 10.4 : medium ? 8.2 : 6.6) * pull,
+      lookY: 0.85,
+      fov: (large ? 36 : medium ? 32 : 30) + (narrow ? 6 : 0),
+    };
+  }
+  const pull = narrow ? (large ? 1.28 : medium ? 1.18 : 1.08) : large ? 0.92 : 0.88;
+  return {
+    large,
+    medium,
+    narrow,
+    pull,
+    baseX: (large ? 0.18 : medium ? 0.28 : 0.35) * (narrow ? 0.15 : 1),
+    baseY: (large ? 8.2 : medium ? 6.6 : 5.6) * pull,
+    baseZ: (large ? 11.4 : medium ? 8.8 : 7.1) * pull,
+    lookY: large ? 0.55 : 0.7,
+    fov: (large ? 38 : medium ? 34 : 32) + (narrow ? (large ? 8 : 6) : 0),
+  };
+}
 function CameraController({
   mouseX,
   mouseY,
@@ -1070,15 +1185,8 @@ function CameraController({
   useFrame(() => {
     const mx = mouseX.current;
     const my = mouseY.current;
-    const large = deskCount > 18;
-    const medium = deskCount > 10;
-    const narrow = size.width < 720 || size.height / Math.max(size.width, 1) > 1.15;
-    const pull = narrow ? (large ? 1.85 : medium ? 1.55 : 1.35) : 1;
-
-    const baseX = (large ? 0.25 : medium ? 0.4 : 0.5) * (narrow ? 0.2 : 1);
-    const baseY = (large ? 9.4 : medium ? 7.4 : 6.4) * pull;
-    const baseZ = (large ? 13.2 : medium ? 10.2 : 8.2) * pull;
-    const lookY = large ? (narrow ? 0.15 : 0.35) : 0.5;
+    const portrait = !orbitActive;
+    const { baseX, baseY, baseZ, lookY, narrow } = cameraFraming(deskCount, size.width, size.height, portrait);
 
     const zoomFactor = 1 / zoom;
 
@@ -1124,20 +1232,10 @@ function CameraController({
   return null;
 }
 
-function AdaptiveCamera({ deskCount }: { deskCount: number }) {
+function AdaptiveCamera({ deskCount, portrait }: { deskCount: number; portrait?: boolean }) {
   const { size } = useThree();
-  const large = deskCount > 18;
-  const medium = deskCount > 10;
-  const narrow = size.width < 720 || size.height / Math.max(size.width, 1) > 1.15;
-  const pull = narrow ? (large ? 1.85 : medium ? 1.55 : 1.35) : 1;
-  const fov = (large ? 42 : medium ? 38 : 36) + (narrow ? (large ? 16 : 12) : 0);
-  const position: [number, number, number] = [
-    (large ? 0.25 : medium ? 0.4 : 0.5) * (narrow ? 0.2 : 1),
-    (large ? 9.4 : medium ? 7.4 : 6.4) * pull,
-    (large ? 13.2 : medium ? 10.2 : 8.2) * pull,
-  ];
-
-  return <PerspectiveCamera makeDefault fov={fov} position={position} />;
+  const { fov, baseX, baseY, baseZ } = cameraFraming(deskCount, size.width, size.height, portrait);
+  return <PerspectiveCamera makeDefault fov={fov} position={[baseX, baseY, baseZ]} />;
 }
 
 /* ─── Full 3D Scene ─── */
@@ -1162,19 +1260,26 @@ function Scene({
 }) {
   const students = useMemo(() => batch.students.slice(0, MAX_DESKS), [batch.students]);
   const count = students.length;
+  const portrait = !orbitActive;
 
   const deskPositions = useMemo((): [number, number, number][] => {
     const cols = count > 20 ? 6 : count > 12 ? 5 : count > 6 ? 4 : count > 3 ? 3 : Math.min(count, 3);
-    const spacingX = count > 20 ? 1.55 : count > 12 ? 1.72 : 1.9;
-    const spacingZ = count > 20 ? 1.8 : count > 12 ? 1.95 : 2.15;
+    const spacingX = portrait
+      ? count > 20 ? 2.15 : count > 12 ? 2.25 : 2.4
+      : count > 20 ? 1.55 : count > 12 ? 1.72 : 1.9;
+    const spacingZ = portrait
+      ? count > 20 ? 2.25 : count > 12 ? 2.35 : 2.5
+      : count > 20 ? 1.8 : count > 12 ? 1.95 : 2.15;
     const startX = -((cols - 1) * spacingX) / 2;
-    const startZ = count > 20 ? -2.4 : count > 12 ? -2.0 : -1.8;
+    const startZ = portrait
+      ? count > 20 ? -3.1 : count > 12 ? -2.6 : -2.2
+      : count > 20 ? -2.4 : count > 12 ? -2.0 : -1.8;
     return students.map((_, i) => {
       const row = Math.floor(i / cols);
       const col = i % cols;
       return [startX + col * spacingX, 0, startZ + row * spacingZ] as [number, number, number];
     });
-  }, [students, count]);
+  }, [students, count, portrait]);
 
   const focusZ = useMemo(() => {
     if (!deskPositions.length) return -1;
@@ -1190,33 +1295,29 @@ function Scene({
 
   return (
     <>
-      <AdaptiveCamera deskCount={count} />
+      <AdaptiveCamera deskCount={count} portrait={portrait} />
       <CameraController mouseX={mouseX} mouseY={mouseY} deskCount={count} focusZ={focusZ} orbitActive={orbitActive} zoomLevel={zoomLevel} onOrbitStop={onOrbitStop} />
 
-      {/* ── Lighting ── */}
-      <ambientLight intensity={0.4} color="#9aabda" />
-      <directionalLight position={[5, 10, 4]} intensity={0.8} color="#e8eeff" castShadow={false} />
-      <hemisphereLight args={["#243658", "#080c16", 0.35]} />
-      {/* Board glow */}
-      <pointLight position={[0, 2.8, -4.5]} color={batch.accentColor} intensity={0.5} distance={10} />
-      {/* Warm ambient from window */}
-      <pointLight position={[-6, 3, -2]} color="#fde68a" intensity={0.15} distance={8} />
-      {/* Rim light from behind camera */}
-      <pointLight position={[0, 5, 10]} color="#e0e8f8" intensity={0.12} distance={14} />
-      {/* Subtle under-desk ambient */}
-      <pointLight position={[0, 0.2, 0]} color="#1e3a5f" intensity={0.08} distance={6} />
+      <ambientLight intensity={portrait ? 0.72 : 0.4} color="#c5d2f0" />
+      <directionalLight position={[4, 10, 6]} intensity={portrait ? 1.05 : 0.8} color="#e8eeff" castShadow={false} />
+      <hemisphereLight args={[portrait ? "#3a4e78" : "#243658", "#080c16", portrait ? 0.5 : 0.35]} />
+      {!portrait ? (
+        <>
+          <pointLight position={[0, 2.8, -4.5]} color={batch.accentColor} intensity={0.5} distance={10} />
+          <pointLight position={[-6, 3, -2]} color="#fde68a" intensity={0.15} distance={8} />
+          <pointLight position={[0, 5, 10]} color="#e0e8f8" intensity={0.12} distance={14} />
+          <pointLight position={[0, 0.2, 0]} color="#1e3a5f" intensity={0.08} distance={6} />
+          <ClassroomRoom accentColor={batch.accentColor} />
+          <InstructorArea
+            accentColor={batch.accentColor}
+            instructor={batch.instructor}
+            course={batch.course}
+          />
+        </>
+      ) : (
+        <pointLight position={[0, 4, 4]} color="#dbe7ff" intensity={0.35} distance={16} />
+      )}
 
-      {/* ── Room ── */}
-      <ClassroomRoom accentColor={batch.accentColor} />
-
-      {/* ── Instructor Area ── */}
-      <InstructorArea
-        accentColor={batch.accentColor}
-        instructor={batch.instructor}
-        course={batch.course}
-      />
-
-      {/* ── Student Desks (dynamic count) ── */}
       {students.map((student, i) => {
         const pos = deskPositions[i];
         if (!pos) return null;
@@ -1228,6 +1329,7 @@ function Scene({
             isHovered={hoveredId === student.id}
             accentColor={batch.accentColor}
             shirtColor={SHIRT_COLORS[i % SHIRT_COLORS.length]}
+            portraitOnly={portrait}
             onHover={handleHover}
             onLeave={handleLeave}
             onSelect={handleHover}
@@ -1281,7 +1383,7 @@ export default function ClassroomScene({
       }}
     >
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={[1, 2]}
         gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
         style={{ background: "#050810" }}
         performance={{ min: 0.45 }}

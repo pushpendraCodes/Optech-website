@@ -10,6 +10,7 @@ interface LiveBannerProps {
   compact?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  onClose?: () => void;
 }
 
 export function LiveBanner({
@@ -18,6 +19,7 @@ export function LiveBanner({
   compact = false,
   className = "",
   style,
+  onClose,
 }: LiveBannerProps) {
   const [progress, setProgress] = useState(() => getProgress(batch.startTime, batch.endTime));
   const [isHovered, setIsHovered] = useState(false);
@@ -67,9 +69,23 @@ export function LiveBanner({
           </div>
         )}
 
-        <span className="text-[10px] uppercase tracking-wider text-white/40 font-mono">
-          {batch.room || "Lab 01"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-white/40 font-mono">
+            {batch.room || "Lab 01"}
+          </span>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close batch details"
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/15 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* Main Title: Course — Batch */}

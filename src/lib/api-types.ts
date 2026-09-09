@@ -59,6 +59,7 @@ export type CmsItem = {
   href?: string;
   cta?: string;
   slot?: string;
+  featured?: boolean;
   sortOrder?: number;
   image?: { url?: string; resourceType?: string; format?: string };
   media?: { url?: string; resourceType?: string; format?: string }[];

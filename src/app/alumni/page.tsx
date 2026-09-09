@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { AlumniBoard } from "@/components/site/AlumniBoard";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Alumni",
-  description: "Optech Deori alumni directory and featured success stories.",
-};
+  description:
+    "Alumni of Optech Computer Institute of Technology, Deori — student success stories, batches, and career outcomes.",
+  path: "/alumni",
+});
 
 export default function AlumniPage() {
   return (
