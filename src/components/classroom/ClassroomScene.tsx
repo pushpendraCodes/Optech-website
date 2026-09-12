@@ -320,23 +320,23 @@ function useBoardTexture(course: string, instructor: string, accent: string) {
 function useInstituteNameTexture(accent: string) {
   return useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 1024;
+    canvas.width = 2048;
     canvas.height = 128;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    ctx.clearRect(0, 0, 1024, 128);
+    ctx.clearRect(0, 0, 2048, 128);
     ctx.fillStyle = "#0a0e1a";
-    ctx.fillRect(0, 0, 1024, 128);
+    ctx.fillRect(0, 0, 2048, 128);
     ctx.strokeStyle = accent;
     ctx.lineWidth = 3;
-    ctx.strokeRect(2, 2, 1020, 124);
+    ctx.strokeRect(2, 2, 2044, 124);
     ctx.fillStyle = "#D4A22F";
-    ctx.font = "bold 52px system-ui, Segoe UI, sans-serif";
+    ctx.font = "bold 56px system-ui, Segoe UI, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(212,162,47,0.6)";
     ctx.shadowBlur = 16;
-    ctx.fillText("OPTECH COMPUTER INSTITUTE", 512, 64);
+    ctx.fillText("OPTECH COMPUTER INSTITUTE OF TECHNOLOGY", 1024, 64);
     ctx.shadowBlur = 0;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -846,27 +846,27 @@ function InstructorArea({
         <meshStandardMaterial color="#0f1d3a" roughness={0.5} />
       </mesh>
 
-      {/* ── OPTECH COMPUTER INSTITUTE name above board ── */}
+      {/* ── OPTECH COMPUTER INSTITUTE OF TECHNOLOGY name above board ── */}
       {instituteTex ? (
         <group position={[0, 3.15, -0.02]}>
           {/* Background panel */}
           <mesh>
-            <boxGeometry args={[4.8, 0.5, 0.06]} />
+            <boxGeometry args={[6.6, 0.5, 0.06]} />
             <meshStandardMaterial color="#0a0e1a" roughness={0.4} metalness={0.1} />
           </mesh>
           {/* Text face */}
           <mesh position={[0, 0, 0.035]}>
-            <planeGeometry args={[4.6, 0.42]} />
+            <planeGeometry args={[6.4, 0.42]} />
             <meshBasicMaterial map={instituteTex} toneMapped={false} />
           </mesh>
           {/* Bottom accent glow line */}
           <mesh position={[0, -0.26, 0.04]}>
-            <boxGeometry args={[4.8, 0.02, 0.02]} />
+            <boxGeometry args={[6.6, 0.02, 0.02]} />
             <meshStandardMaterial color="#D4A22F" emissive="#D4A22F" emissiveIntensity={0.8} />
           </mesh>
           {/* Top accent glow line */}
           <mesh position={[0, 0.26, 0.04]}>
-            <boxGeometry args={[4.8, 0.02, 0.02]} />
+            <boxGeometry args={[6.6, 0.02, 0.02]} />
             <meshStandardMaterial color="#D4A22F" emissive="#D4A22F" emissiveIntensity={0.5} />
           </mesh>
         </group>

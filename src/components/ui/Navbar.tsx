@@ -13,6 +13,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   const primary = [
+    { href: "/", label: t("nav_home") },
     { href: "/about", label: t("nav_about") },
     { href: "/courses", label: t("nav_courses") },
     { href: "/staff", label: t("nav_staff") },
@@ -67,28 +68,6 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="group relative">
-            <button
-              type="button"
-              aria-haspopup="true"
-              className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.24em] text-zinc-400 transition-colors duration-200 group-hover:text-foreground group-focus-within:text-foreground"
-            >
-              {t("nav_more")}
-            </button>
-            <div className="invisible absolute right-0 top-full z-50 pt-3 opacity-0 transition-[opacity,visibility] duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              <div className="w-52 rounded-2xl border border-white/10 bg-black/85 p-2 backdrop-blur-xl">
-                {more.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-300 transition-colors duration-200 hover:bg-white/[0.06] hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
         </nav>
 
         <div className="flex items-center gap-2 md:gap-3">
@@ -133,6 +112,20 @@ export function Navbar() {
           </button>
         </div>
       </div>
+
+      <nav className="hidden border-t border-white/8 lg:block">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-5 gap-y-2 px-6 py-2 md:px-8">
+          {more.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 transition-colors duration-200 hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       {open ? (
         <div className="border-t border-white/8 px-6 py-6 lg:hidden">

@@ -9,6 +9,7 @@ import { MarqueeBar } from "@/components/site/MarqueeBar";
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isStudent = pathname.startsWith("/student");
+  const isLive = pathname === "/live";
 
   if (isStudent) {
     return <main>{children}</main>;
@@ -21,8 +22,8 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         <Navbar />
       </div>
       <main>{children}</main>
-      <Footer />
-      <WhatsAppButton />
+      {isLive ? null : <Footer />}
+      {isLive ? null : <WhatsAppButton />}
     </>
   );
 }

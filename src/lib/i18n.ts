@@ -39,8 +39,8 @@ const en = {
   whatsapp_msg: "Hello Optech! I would like to enquire about your courses.",
 
   hero_eyebrow: "ISO CERTIFIED // DEORI // EST. 1994",
-  hero_name: "Optech",
-  hero_institute: "Computer Institute of Technology",
+  hero_name: "OPTECH",
+  hero_institute: "COMPUTER INSTITUTE OF TECHNOLOGY (OCIT)",
   hero_place: "Deori, Maharashtra",
   hero_lead:
     "Optech Computer Institute of Technology, Deori — empowering students with ISO-certified computer courses, industry-recognized certifications, and placement support since 1994.",

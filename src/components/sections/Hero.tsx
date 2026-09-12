@@ -188,7 +188,7 @@ export function Hero() {
   return (
     <section ref={sectionRef} className="scroll-animation relative">
       <div
-        className="sticky top-0 min-h-[100dvh] w-full overflow-hidden bg-background"
+        className="sticky top-5 min-h-[100dvh] w-full overflow-hidden bg-background"
         style={{ height: "100dvh", willChange: "transform", transform: "translateZ(0)" }}
       >
         <canvas
@@ -224,10 +224,10 @@ export function Hero() {
           style={{ transition: "opacity 80ms linear" }}
         >
           <EyebrowBadge>{t("hero_eyebrow")}</EyebrowBadge>
-          <h1 className="max-w-[22ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-7xl lg:text-8xl">
-            {t("hero_name")}
+          <h1 className="max-w-[22ch] font-sans text-5xl font-semibold leading-[0.95] tracking-tighter text-foreground md:text-6xl lg:text-7xl">
+            <span className="text-uppercase">{t("hero_name")}</span>
             <br />
-            <span className="text-accent">{t("hero_institute")}</span>
+            <span className="text-accent text-uppercase">{t("hero_institute")}</span>
           </h1>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-zinc-400">{t("hero_place")}</p>
           <p className="max-w-[42ch] font-sans text-sm leading-relaxed text-zinc-400 md:text-base">

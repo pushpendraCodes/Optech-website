@@ -46,7 +46,7 @@ function StudentGrid({
   onPick: (s: ClassroomStudent) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
       {batch.students.map((s) => {
         const active = selectedId === s.id;
         return (
@@ -54,13 +54,13 @@ function StudentGrid({
             key={s.id}
             type="button"
             onClick={() => onPick(s)}
-            className="cursor-pointer rounded-2xl border p-3 text-left transition-colors"
+            className="cursor-pointer rounded-2xl border p-2.5 text-left transition-colors sm:p-3"
             style={{
               background: active ? `${batch.color}18` : "rgba(10,14,26,0.86)",
               borderColor: active ? `${batch.color}66` : "rgba(255,255,255,0.08)",
             }}
           >
-            <span className="relative mx-auto mb-3 block aspect-square w-full max-w-[140px] overflow-hidden rounded-full border-2 border-white/12">
+            <span className="relative mx-auto mb-2.5 block aspect-square w-full overflow-hidden rounded-full border-2 border-white/12">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={s.photo}
@@ -248,7 +248,7 @@ export function LiveClassroom({
 
   return (
     <section
-      className="relative min-h-dvh w-full overflow-x-hidden pt-28 md:pt-32 pb-12"
+      className="relative min-h-dvh w-full overflow-x-hidden pt-28 md:pt-37 pb-12"
       style={{ background: "#050810" }}
     >
       <div
@@ -258,7 +258,7 @@ export function LiveClassroom({
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6">
+      <div className="relative z-10 w-full px-3 sm:px-4 lg:px-6">
         <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <div className="mb-1.5 flex items-center gap-2.5">
