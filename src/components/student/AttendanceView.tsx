@@ -63,6 +63,14 @@ function dayStatus(rows: AttendanceRow[]): AttendanceStatus | null {
   return "present";
 }
 
+function photoUrl(value: unknown) {
+  if (value && typeof value === "object" && "url" in value) {
+    const url = (value as { url?: unknown }).url;
+    return typeof url === "string" ? url : "";
+  }
+  return "";
+}
+
 export function AttendanceView() {
   const { t, locale } = useI18n();
   const { studentId } = useStudentAuth();
@@ -73,11 +81,18 @@ export function AttendanceView() {
   const log = useMemo<AttendanceRow[]>(() => {
     if (!data?.data?.length) return [];
     return data.data.map((row) => ({
-      date: String(row.date ?? "").slice(0, 10),
+      date: (() => {
+        const parsed = new Date(String(row.date ?? ""));
+        return Number.isNaN(parsed.getTime()) ? String(row.date ?? "").slice(0, 10) : parsed.toISOString().slice(0, 10);
+      })(),
       course: loc((row.course as { title?: unknown } | undefined)?.title as never) || "Course",
       status: (["present", "late", "absent"].includes(String(row.status))
         ? row.status
         : "present") as AttendanceStatus,
+      loginPhoto: photoUrl(row.loginPhoto),
+      logoutPhoto: photoUrl(row.logoutPhoto),
+      loginAt: row.loginAt ? String(row.loginAt) : undefined,
+      logoutAt: row.logoutAt ? String(row.logoutAt) : undefined,
     }));
   }, [data]);
 
@@ -105,6 +120,7 @@ export function AttendanceView() {
 
   const [month, setMonth] = useState("");
   const [course, setCourse] = useState("all");
+  const [preview, setPreview] = useState<{ url: string; label: string } | null>(null);
   const activeMonth = month && months.includes(month) ? month : (months[months.length - 1] ?? "");
 
   const courses = useMemo(() => [...new Set(log.map((row) => row.course))], [log]);
@@ -308,6 +324,42 @@ export function AttendanceView() {
                     {t("st_att_no_class")}
                   </span>
                 )}
+                {rows.some((row) => row.loginPhoto || row.logoutPhoto) ? (
+                  <div className="mt-1 flex justify-center gap-0.5">
+                    {rows.flatMap((row) =>
+                      [
+                        row.loginPhoto
+                          ? (
+                              <button
+                                key={`${row.date}-${row.course}-in`}
+                                type="button"
+                                title="Login selfie"
+                                onClick={() => setPreview({ url: row.loginPhoto!, label: `${row.course} · Login` })}
+                                className="h-6 w-6 overflow-hidden rounded-md ring-1 ring-white/20"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={row.loginPhoto} alt="" className="h-full w-full object-cover" />
+                              </button>
+                            )
+                          : null,
+                        row.logoutPhoto
+                          ? (
+                              <button
+                                key={`${row.date}-${row.course}-out`}
+                                type="button"
+                                title="Logout selfie"
+                                onClick={() => setPreview({ url: row.logoutPhoto!, label: `${row.course} · Logout` })}
+                                className="h-6 w-6 overflow-hidden rounded-md ring-1 ring-white/20"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={row.logoutPhoto} alt="" className="h-full w-full object-cover" />
+                              </button>
+                            )
+                          : null,
+                      ].filter(Boolean),
+                    )}
+                  </div>
+                ) : null}
                 {status ? (
                   <span className="font-mono text-[8px] uppercase tracking-[0.12em]">
                     {t(STATUS_LABEL[status])}
@@ -331,6 +383,31 @@ export function AttendanceView() {
           </span>
         </div>
       </section>
+
+      {preview ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            aria-label="Close photo"
+            onClick={() => setPreview(null)}
+          />
+          <figure className="relative z-10 w-full max-w-3xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview.url} alt={preview.label} className="max-h-[80vh] w-full rounded-2xl object-contain" />
+            <figcaption className="mt-3 text-center font-mono text-xs uppercase tracking-[0.16em] text-zinc-300">
+              {preview.label}
+            </figcaption>
+            <button
+              type="button"
+              onClick={() => setPreview(null)}
+              className="mx-auto mt-3 block rounded-full border border-white/15 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-white"
+            >
+              Close
+            </button>
+          </figure>
+        </div>
+      ) : null}
     </div>
   );
 }

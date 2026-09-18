@@ -15,6 +15,22 @@ export interface ClassroomStudent {
   batch: string;
   joinedDate: string;
   status: "active" | "absent";
+  loggedIn?: boolean;
+  loggedOut?: boolean;
+}
+
+export type LiveAttendanceStatus = "in_class" | "absent" | "logged_out";
+
+export function liveAttendanceStatus(student: Pick<ClassroomStudent, "loggedIn" | "loggedOut">): LiveAttendanceStatus {
+  if (student.loggedIn && student.loggedOut) return "logged_out";
+  if (student.loggedIn) return "in_class";
+  return "absent";
+}
+
+export function liveAttendanceLabel(status: LiveAttendanceStatus) {
+  if (status === "in_class") return "In class";
+  if (status === "logged_out") return "Logged out";
+  return "Absent";
 }
 
 export interface ClassroomBatch {
@@ -163,7 +179,9 @@ export function mapApiToBatches(rows: Record<string, unknown>[]): ClassroomBatch
           course: String(student.course ?? course),
           batch: String(student.batch ?? batchName),
           joinedDate: String(student.joinedDate ?? ""),
-          status: student.status === "absent" ? "absent" : "active",
+          loggedIn: Boolean(student.loggedIn),
+          loggedOut: Boolean(student.loggedOut),
+          status: student.loggedIn ? "active" : "absent",
         };
       }),
     };

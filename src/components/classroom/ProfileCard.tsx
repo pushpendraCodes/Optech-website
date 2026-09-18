@@ -1,12 +1,14 @@
 "use client";
 
 import type { ClassroomBatch, ClassroomStudent } from "./types";
+import { liveAttendanceLabel, liveAttendanceStatus } from "./types";
 
 interface ProfileCardProps {
   student: ClassroomStudent | null;
   batch: ClassroomBatch;
   currentTask?: string;
   onClose?: () => void;
+  onMarkAttendance?: () => void;
   style?: React.CSSProperties;
   className?: string;
 }
@@ -16,6 +18,7 @@ export function ProfileCard({
   batch,
   currentTask,
   onClose,
+  onMarkAttendance,
   style,
   className = "",
 }: ProfileCardProps) {
@@ -49,7 +52,15 @@ export function ProfileCard({
         </div>
         {/* Status Dot */}
         <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#0a1020]">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+          <span
+            className={`h-2.5 w-2.5 rounded-full ${
+              liveAttendanceStatus(student) === "in_class"
+                ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                : liveAttendanceStatus(student) === "logged_out"
+                  ? "bg-sky-400 shadow-[0_0_8px_#38bdf8]"
+                  : "bg-red-500 shadow-[0_0_8px_#f87171]"
+            }`}
+          />
         </span>
       </div>
 
@@ -82,12 +93,26 @@ export function ProfileCard({
           {student.batch}
         </p>
 
-        <div className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-          </span>
-          <span>Currently Learning</span>
+        <div className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold">
+          {liveAttendanceStatus(student) === "in_class" ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-emerald-400">{liveAttendanceLabel("in_class")}</span>
+            </>
+          ) : liveAttendanceStatus(student) === "logged_out" ? (
+            <>
+              <span className="h-2 w-2 rounded-full bg-sky-400" />
+              <span className="text-sky-300">{liveAttendanceLabel("logged_out")}</span>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="text-red-300">{liveAttendanceLabel("absent")}</span>
+            </>
+          )}
         </div>
 
         {currentTask && (
@@ -95,6 +120,23 @@ export function ProfileCard({
             Task: {currentTask}
           </p>
         )}
+
+        {onMarkAttendance ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMarkAttendance();
+            }}
+            className="mt-2 inline-flex cursor-pointer rounded-full border border-sky-400/40 bg-sky-500/15 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-sky-200"
+          >
+            {student.loggedIn && student.loggedOut
+              ? "Attendance done"
+              : student.loggedIn
+                ? "Mark logout selfie"
+                : "Mark login selfie"}
+          </button>
+        ) : null}
       </div>
     </div>
   );

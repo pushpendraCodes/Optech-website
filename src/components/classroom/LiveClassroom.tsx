@@ -10,10 +10,13 @@ import {
   formatTime,
   isBatchLiveNow,
   createDemoBatch30,
+  liveAttendanceStatus,
+  liveAttendanceLabel,
 } from "./types";
 import { LiveBanner } from "./LiveBanner";
 import { ProfileCard } from "./ProfileCard";
 import { EmptyState } from "./EmptyState";
+import { AttendanceCaptureModal } from "./AttendanceCaptureModal";
 
 const ClassroomScene = lazy(() => import("./ClassroomScene"));
 
@@ -49,11 +52,21 @@ function StudentGrid({
     <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
       {batch.students.map((s) => {
         const active = selectedId === s.id;
+        const att = liveAttendanceStatus(s);
+        const attTone =
+          att === "in_class"
+            ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
+            : att === "logged_out"
+              ? "border-sky-400/40 bg-sky-500/15 text-sky-300"
+              : "border-red-400/40 bg-red-500/15 text-red-300";
+        const dot =
+          att === "in_class" ? "bg-emerald-400" : att === "logged_out" ? "bg-sky-400" : "bg-red-500";
         return (
           <button
             key={s.id}
             type="button"
             onClick={() => onPick(s)}
+            aria-label={`Mark attendance for ${s.name}, currently ${liveAttendanceLabel(att)}`}
             className="cursor-pointer rounded-2xl border p-2.5 text-left transition-colors sm:p-3"
             style={{
               background: active ? `${batch.color}18` : "rgba(10,14,26,0.86)",
@@ -74,11 +87,14 @@ function StudentGrid({
                   )}&background=1a2240&color=fff&size=160`;
                 }}
               />
-              <span className="absolute right-1 bottom-1 h-3 w-3 rounded-full border-2 border-[#0a1020] bg-emerald-400" />
+              <span className={`absolute right-1 bottom-1 h-3 w-3 rounded-full border-2 border-[#0a1020] ${dot}`} />
             </span>
             <p className="truncate text-center text-sm font-bold text-white sm:text-base">{s.name}</p>
             <p className="mt-0.5 truncate text-center text-[11px] font-medium text-white/50">
               {s.course || batch.course}
+            </p>
+            <p className={`mt-1.5 rounded-full px-2 py-0.5 text-center font-mono text-[9px] uppercase tracking-[0.14em] ${attTone}`}>
+              {liveAttendanceLabel(att)}
             </p>
           </button>
         );
@@ -178,9 +194,11 @@ function CourseTicker({
 export function LiveClassroom({
   data,
   onExitDemo,
+  onAttendanceOpen,
 }: {
   data: ClassroomBatch[];
   onExitDemo?: () => void;
+  onAttendanceOpen?: (open: boolean) => void;
 }) {
   const [demoMode, setDemoMode] = useState(false);
   const isForcedDemo = data.length === 1 && data[0]?.id === "demo-batch-30";
@@ -194,6 +212,7 @@ export function LiveClassroom({
   const [nextBatch, setNextBatch] = useState<ClassroomBatch | null>(() => getNextBatch(todayBatches));
   const [selectedBatch, setSelectedBatch] = useState<ClassroomBatch | null>(() => pickPrimaryBatch(todayBatches));
   const [hoveredStudent, setHoveredStudent] = useState<ClassroomStudent | null>(null);
+  const [captureStudent, setCaptureStudent] = useState<ClassroomStudent | null>(null);
   const [show3d, setShow3d] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(1.1);
@@ -212,8 +231,13 @@ export function LiveClassroom({
   }, []);
 
   useEffect(() => {
+    onAttendanceOpen?.(Boolean(captureStudent));
+  }, [captureStudent, onAttendanceOpen]);
+
+  useEffect(() => {
+    if (captureStudent) return;
     syncSelection(todayBatches);
-  }, [todayBatches, syncSelection]);
+  }, [todayBatches, syncSelection, captureStudent]);
 
   const handleBatchSelect = useCallback(
     (batch: ClassroomBatch) => {
@@ -226,8 +250,35 @@ export function LiveClassroom({
   );
 
   const handleStudentPick = useCallback((student: ClassroomStudent) => {
-    setHoveredStudent((prev) => (prev?.id === student.id ? null : student));
+    setCaptureStudent(student);
   }, []);
+  const closeCapture = useCallback(() => setCaptureStudent(null), []);
+  const markCaptured = useCallback((action: "login" | "logout") => {
+    setSelectedBatch((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        students: prev.students.map((row) =>
+          row.id === captureStudent?.id
+            ? {
+                ...row,
+                loggedIn: action === "login" ? true : row.loggedIn,
+                loggedOut: action === "logout" ? true : row.loggedOut,
+              }
+            : row,
+        ),
+      };
+    });
+    setCaptureStudent((prev) =>
+      prev
+        ? {
+            ...prev,
+            loggedIn: action === "login" ? true : prev.loggedIn,
+            loggedOut: action === "logout" ? true : prev.loggedOut,
+          }
+        : prev,
+    );
+  }, [captureStudent?.id]);
 
   const handleStudentHover = useCallback((student: ClassroomStudent | null) => {
     setHoveredStudent(student);
@@ -285,6 +336,9 @@ export function LiveClassroom({
             </h1>
             <p className="mt-1 text-sm text-white/45">
               {selectedBatch.students.length} students · {selectedBatch.course}
+            </p>
+            <p className="mt-1 text-xs text-white/35">
+              Tap your card — camera opens for login or logout. In class after login, Absent until then.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -405,6 +459,7 @@ export function LiveClassroom({
                     student={hoveredStudent}
                     batch={selectedBatch}
                     onClose={() => setHoveredStudent(null)}
+                    onMarkAttendance={() => setCaptureStudent(hoveredStudent)}
                   />
                 </div>
               ) : null}
@@ -413,23 +468,22 @@ export function LiveClassroom({
         ) : (
           <StudentGrid
             batch={selectedBatch}
-            selectedId={hoveredStudent?.id ?? null}
+            selectedId={captureStudent?.id ?? hoveredStudent?.id ?? null}
             onPick={handleStudentPick}
           />
         )}
 
-        {hoveredStudent && !show3d ? (
-          <div className="mt-4">
-            <ProfileCard
-              student={hoveredStudent}
-              batch={selectedBatch}
-              onClose={() => setHoveredStudent(null)}
-              className="w-full max-w-xl"
-            />
-          </div>
-        ) : null}
-
       </div>
+
+      {captureStudent ? (
+        <AttendanceCaptureModal
+          student={captureStudent}
+          batch={selectedBatch}
+          demo={showingDemo}
+          onClose={closeCapture}
+          onMarked={markCaptured}
+        />
+      ) : null}
     </section>
   );
 }

@@ -123,6 +123,30 @@ export const api = createApi({
       query: () => "/public/live",
       providesTags: ["Public"],
     }),
+    markLiveAttendance: build.mutation<
+      ApiSuccess<{
+        action: "login" | "logout";
+        loginAt?: string;
+        logoutAt?: string;
+        status?: string;
+      }>,
+      { photo: Blob; studentId: string; batchId: string; action: "login" | "logout" }
+    >({
+      query: ({ photo, studentId, batchId, action }) => {
+        const body = new FormData();
+        const filename = `${action}-${Date.now()}.jpg`;
+        const file =
+          photo instanceof File
+            ? photo
+            : new File([photo], filename, { type: photo.type || "image/jpeg" });
+        body.append("photo", file);
+        body.append("studentId", studentId);
+        body.append("batchId", batchId);
+        body.append("action", action);
+        return { url: "/public/live/attendance", method: "POST", body };
+      },
+      invalidatesTags: ["Public"],
+    }),
     getScholarship: build.query<ApiSuccess<Record<string, unknown>>, void>({
       query: () => "/public/scholarship",
       providesTags: ["Public"],
@@ -383,6 +407,7 @@ export const {
   useGetPopupsQuery,
   useGetLinksQuery,
   useGetLiveQuery,
+  useMarkLiveAttendanceMutation,
   useGetScholarshipQuery,
   useSubmitEnquiryMutation,
   useQuoteFeeMutation,

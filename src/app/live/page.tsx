@@ -101,8 +101,9 @@ function NoClassroomView({ onPreviewDemo }: { onPreviewDemo: () => void }) {
 
 export default function LivePage() {
   const [forceDemo, setForceDemo] = useState(false);
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
   const { data, isLoading, isError } = useGetLiveQuery(undefined, {
-    pollingInterval: forceDemo ? 0 : 30000,
+    pollingInterval: forceDemo || attendanceOpen ? 0 : 30000,
   });
   const batches = useMemo(
     () => mapApiToBatches((data?.data ?? []) as Record<string, unknown>[]),
@@ -110,7 +111,13 @@ export default function LivePage() {
   );
 
   if (forceDemo) {
-    return <LiveClassroom data={[createDemoBatch30()]} onExitDemo={() => setForceDemo(false)} />;
+    return (
+      <LiveClassroom
+        data={[createDemoBatch30()]}
+        onExitDemo={() => setForceDemo(false)}
+        onAttendanceOpen={setAttendanceOpen}
+      />
+    );
   }
 
   if (isLoading) {
@@ -128,5 +135,5 @@ export default function LivePage() {
     return <NoClassroomView onPreviewDemo={() => setForceDemo(true)} />;
   }
 
-  return <LiveClassroom data={batches} />;
+  return <LiveClassroom data={batches} onAttendanceOpen={setAttendanceOpen} />;
 }

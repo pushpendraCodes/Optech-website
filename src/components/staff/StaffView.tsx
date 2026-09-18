@@ -1,20 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { TiltStaffCard, type StaffMember } from "./TiltStaffCard";
+import { StaffPhoneShowcase } from "./StaffPhoneShowcase";
 import { useGetStaffQuery } from "@/lib/api";
-
-const ARC = [
-  { rotate: -22, y: "34%" },
-  { rotate: -13, y: "14%" },
-  { rotate: -4, y: "3%" },
-  { rotate: 4, y: "3%" },
-  { rotate: 13, y: "14%" },
-  { rotate: 22, y: "34%" },
-] as const;
 
 export function StaffView() {
   const { t } = useI18n();
@@ -29,7 +20,16 @@ export function StaffView() {
     twitter: member.twitter ?? "",
     website: member.website ?? "",
   }));
-  const featured = members.filter((m) => m.photo).slice(0, 6);
+  const featured = members.map((member) => ({
+    name: member.name,
+    role: member.role,
+    focus: member.focus,
+    bio: member.bio,
+    photo: member.photo,
+    linkedin: member.linkedin,
+    twitter: member.twitter,
+    website: member.website,
+  }));
 
   return (
     <>
@@ -57,40 +57,7 @@ export function StaffView() {
 
         {featured.length > 0 ? (
           <div className="relative mx-auto mt-12 max-w-[1100px] md:mt-16">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-[10%] bottom-0 h-32 rounded-[999px] blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(60% 100% at 50% 60%, rgba(168,85,247,0.30) 0%, rgba(236,72,153,0.18) 34%, transparent 74%)",
-              }}
-            />
-
-            <div className="relative flex flex-nowrap items-start justify-center gap-1.5 px-1 pb-12 sm:gap-2.5 sm:pb-16 md:gap-3 md:pb-20 lg:gap-4">
-              {featured.map((member, i) => {
-                const pose = ARC[i];
-                if (!pose) return null;
-                return (
-                  <div
-                    key={member.name}
-                    className="w-[40px] flex-none sm:w-[70px] md:w-[96px] lg:w-[128px]"
-                    style={{
-                      transform: `rotate(${pose.rotate}deg) translateY(${pose.y})`,
-                    }}
-                  >
-                    <div className="overflow-hidden rounded-[14px] border border-white/10 bg-zinc-900 shadow-[0_16px_32px_-14px_rgba(0,0,0,0.85)] transition-transform duration-300 hover:-translate-y-1 sm:rounded-[18px] md:rounded-[22px]">
-                      <Image
-                        src={member.photo}
-                        alt=""
-                        width={380}
-                        height={480}
-                        className="aspect-[4/5] h-auto w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <StaffPhoneShowcase members={featured} />
           </div>
         ) : null}
       </section>
