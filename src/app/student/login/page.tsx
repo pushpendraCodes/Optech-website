@@ -14,6 +14,7 @@ export default function StudentLoginPage() {
   const { ready, studentId, login } = useStudentAuth();
   const router = useRouter();
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,9 +23,13 @@ export default function StudentLoginPage() {
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (submitting) return;
+    setError("");
+    setSubmitting(true);
     const data = new FormData(e.currentTarget);
     const err = await login(String(data.get("id") ?? ""), String(data.get("password") ?? ""));
     if (err) {
+      setSubmitting(false);
       setError(err);
       errorRef.current?.focus();
       return;
@@ -70,6 +75,7 @@ export default function StudentLoginPage() {
             name="id"
             autoComplete="username"
             required
+            disabled={submitting}
             className={fieldClass}
           />
         </div>
@@ -83,11 +89,27 @@ export default function StudentLoginPage() {
             type="password"
             autoComplete="current-password"
             required
+            disabled={submitting}
             className={fieldClass}
           />
         </div>
-        <button type="submit" className={`${btnPrimary} mt-6 w-full`}>
-          {t("login_enter")}
+        <button
+          type="submit"
+          disabled={submitting}
+          aria-busy={submitting}
+          className={`${btnPrimary} mt-6 w-full disabled:opacity-80`}
+        >
+          {submitting ? (
+            <>
+              <span
+                className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent/30 border-t-accent"
+                aria-hidden
+              />
+              {t("login_checking")}
+            </>
+          ) : (
+            t("login_enter")
+          )}
         </button>
       </form>
     </div>

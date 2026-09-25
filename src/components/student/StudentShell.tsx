@@ -17,6 +17,7 @@ import {
   LinkSimple,
   List,
   Question,
+  SidebarSimple,
   SignOut,
   User,
   Users,
@@ -60,6 +61,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [liveUnread, setLiveUnread] = useState(0);
 
   const { data: dash, refetch: refetchDash } = useGetStudentDashboardQuery(undefined, {
@@ -105,19 +107,21 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 bg-[#0a0a18]/80 p-4 backdrop-blur-xl transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 bg-[#0a0a18]/80 p-4 backdrop-blur-xl transition-[transform,width] duration-200 ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        } ${collapsed ? "lg:w-[76px]" : ""}`}
       >
-        <div className="mb-6 flex shrink-0 items-center justify-between gap-2">
-          <BrandLogo href="/" height={32} />
+        <div className={`mb-6 flex shrink-0 items-center gap-2 ${collapsed ? "justify-between lg:justify-center" : "justify-between"}`}>
+          <div className={collapsed ? "lg:hidden" : ""}>
+            <BrandLogo href="/" height={32} />
+          </div>
           <button
             type="button"
-            className="cursor-pointer p-1 lg:hidden"
+            className="cursor-pointer rounded-full border border-accent/40 p-1.5 text-accent lg:hidden"
             aria-label={t("st_nav_close")}
             onClick={() => setOpen(false)}
           >
-            <X size={16} />
+            <X size={16} weight="bold" />
           </button>
         </div>
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
@@ -129,14 +133,17 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
+                title={t(item.label)}
                 className={`flex items-center gap-2 rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200 ${
+                  collapsed ? "lg:justify-center lg:px-2" : ""
+                } ${
                   active
                     ? "bg-accent/15 text-accent"
                     : "text-zinc-400 hover:bg-white/[0.04] hover:text-foreground"
                 }`}
               >
                 <Icon size={16} aria-hidden />
-                {t(item.label)}
+                <span className={collapsed ? "lg:sr-only" : ""}>{t(item.label)}</span>
               </Link>
             );
           })}
@@ -144,23 +151,36 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
         <Link
           href="/"
           onClick={() => setOpen(false)}
-          className="mt-4 flex shrink-0 items-center gap-2 rounded-xl border border-white/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-300 transition-colors duration-200 hover:bg-white/[0.04] hover:text-foreground"
+          title={t("st_back_site")}
+          className={`mt-4 flex shrink-0 items-center gap-2 rounded-xl border border-white/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-300 transition-colors duration-200 hover:bg-white/[0.04] hover:text-foreground ${
+            collapsed ? "lg:justify-center lg:px-2" : ""
+          }`}
         >
           <ArrowLeft size={16} aria-hidden />
-          {t("st_back_site")}
+          <span className={collapsed ? "lg:sr-only" : ""}>{t("st_back_site")}</span>
         </Link>
       </aside>
 
-      <div className="flex h-dvh min-w-0 flex-col lg:pl-64">
+      <div className={`flex h-dvh min-w-0 flex-col transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-64"}`}>
         <header className="z-30 flex shrink-0 items-center justify-between border-b border-white/8 bg-[#0a0a18]/70 px-4 py-3 backdrop-blur-xl">
-          <button
-            type="button"
-            className="cursor-pointer rounded-full border border-white/10 p-2 lg:hidden"
-            aria-label={t("st_nav_open")}
-            onClick={() => setOpen(true)}
-          >
-            <List size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="cursor-pointer rounded-full border border-accent/40 p-2 text-accent lg:hidden"
+              aria-label={t("st_nav_open")}
+              onClick={() => setOpen(true)}
+            >
+              <List size={18} weight="bold" />
+            </button>
+            <button
+              type="button"
+              className="hidden cursor-pointer rounded-full border border-accent/40 p-2 text-accent lg:inline-flex"
+              aria-label={collapsed ? t("st_nav_open") : t("st_nav_close")}
+              onClick={() => setCollapsed((value) => !value)}
+            >
+              <SidebarSimple size={18} weight="bold" className={collapsed ? "" : "scale-x-[-1]"} />
+            </button>
+          </div>
           <div className="hidden font-sans text-sm text-zinc-400 lg:block">
             {displayName} · {displayId}
           </div>
