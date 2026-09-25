@@ -107,7 +107,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 bg-[#0a0a18]/80 p-4 backdrop-blur-xl transition-[transform,width] duration-200 ${
+        className={`student-sidebar fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/8 p-4 transition-[transform,width] duration-200 ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } ${collapsed ? "lg:w-[76px]" : ""}`}
       >
@@ -162,7 +162,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className={`flex h-dvh min-w-0 flex-col transition-[padding] duration-200 ${collapsed ? "lg:pl-[76px]" : "lg:pl-64"}`}>
-        <header className="z-30 flex shrink-0 items-center justify-between border-b border-white/8 bg-[#0a0a18]/70 px-4 py-3 backdrop-blur-xl">
+        <header className="student-header z-30 flex shrink-0 items-center justify-between border-b border-white/8 px-4 py-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -220,7 +220,8 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">{children}</main>
+        <div aria-hidden className="h-0.5 w-full shrink-0 bg-[linear-gradient(90deg,#ff1f3d,#8b2cff,#1a5cff)] opacity-90" />
+        <main className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,31,61,0.04),transparent_18%,rgba(26,92,255,0.05))] px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>
       <StudentNotificationToast />
     </div>

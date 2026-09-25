@@ -346,7 +346,7 @@ export function ExamRunner({ id }: { id: string }) {
                       name={q.id}
                       checked={selected}
                       onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: String(idx) }))}
-                      className="mt-0.5 accent-[#d4a22f]"
+                      className="mt-0.5 accent-accent"
                     />
                     {opt}
                   </label>

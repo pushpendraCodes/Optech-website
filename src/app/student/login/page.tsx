@@ -38,7 +38,7 @@ export default function StudentLoginPage() {
   };
 
   return (
-    <div className="student-portal flex min-h-dvh items-center justify-center px-6 py-16">
+    <div className="student-portal student-login flex min-h-dvh items-center justify-center px-6 py-16">
       <form onSubmit={onSubmit} className="card-surface w-full max-w-md p-6 md:p-8">
         <div className="mb-4 flex items-center justify-between gap-3">
           <BrandLogo href="/" height={36} />

@@ -20,7 +20,7 @@
   --space-xl: 32px;
 }
 
-/* Student portal — match admin red→purple→blue brand */
+/* Student portal — same palette and chrome as the admin panel */
 .student-portal {
   --background: #06060e;
   --foreground: #eef0f8;
@@ -34,12 +34,40 @@
   --brand-mid: #8b2cff;
   --brand-to: #1a5cff;
   color: var(--foreground);
+  background: var(--background);
+}
+
+.student-portal .card-surface {
   background:
-    radial-gradient(90% 55% at 0% 0%, rgba(255, 31, 61, 0.2) 0%, transparent 55%),
-    radial-gradient(80% 50% at 100% 0%, rgba(26, 92, 255, 0.24) 0%, transparent 50%),
-    radial-gradient(60% 40% at 50% 100%, rgba(139, 44, 255, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(255, 31, 61, 0.06), transparent 28%, rgba(26, 92, 255, 0.07)),
+    var(--card-bg);
+  border-color: var(--card-border);
+  border-radius: 16px;
+}
+
+.student-sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 31, 61, 0.32) 0%,
+      rgba(139, 44, 255, 0.22) 48%,
+      rgba(26, 92, 255, 0.34) 100%
+    ),
+    #080814;
+}
+
+.student-header {
+  background:
+    linear-gradient(90deg, rgba(255, 31, 61, 0.28), rgba(139, 44, 255, 0.18), rgba(26, 92, 255, 0.28)),
+    rgba(6, 6, 16, 0.72);
+}
+
+.student-login {
+  background:
+    radial-gradient(80% 60% at 10% 0%, rgba(255, 31, 61, 0.34) 0%, transparent 55%),
+    radial-gradient(70% 50% at 90% 20%, rgba(26, 92, 255, 0.38) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 31, 61, 0.2), transparent 40%, rgba(26, 92, 255, 0.24)),
     var(--background);
-  background-attachment: fixed;
 }
 
 .student-portal ::selection {

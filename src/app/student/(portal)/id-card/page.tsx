@@ -38,7 +38,7 @@ function BrandHeader({ logoSrc, instituteName }: { logoSrc?: string; instituteNa
           <img src={logoSrc} alt="" className="h-full w-full object-contain" />
         </div>
       ) : (
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d4a22f]/60 bg-[#3d2818] font-mono text-[10px] text-[#d4a22f]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-accent/60 bg-accent/15 font-mono text-[10px] text-accent">
           {main.slice(0, 2)}
         </div>
       )}
