@@ -20,7 +20,7 @@ function readSession(): StudentSession {
     const parsed = JSON.parse(raw) as StudentSession;
     return {
       accessToken: parsed.accessToken ?? null,
-      refreshToken: parsed.refreshToken ?? null,
+      refreshToken: null,
       name: parsed.name ?? null,
       studentCode: parsed.studentCode ?? null,
       hydrated: true,
@@ -32,7 +32,8 @@ function readSession(): StudentSession {
 
 function persist(state: StudentSession) {
   if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const { refreshToken: _refreshToken, ...stored } = state;
+  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 }
 
 const initialState: StudentSession = {

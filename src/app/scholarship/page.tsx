@@ -187,7 +187,6 @@ export default function ScholarshipPage() {
       submittingRef.current = true;
       setTerminationReason(reason);
 
-      const timeTakenSeconds = startedAt ? Math.round((Date.now() - startedAt) / 1000) : undefined;
       const payload = questions.map((q, index) => ({
         index,
         value: Number(answers[q.id] ?? -1),
@@ -200,18 +199,21 @@ export default function ScholarshipPage() {
           phone,
           email: email || undefined,
           studentCode: studentId || undefined,
-          timeTakenSeconds,
           answers: payload,
         }).unwrap();
         setResult(body.data as SubmitResult);
         setStep("result");
-      } catch {
+      } catch (err) {
         submittingRef.current = false;
-        setErrors(["Could not submit exam. Please try again."]);
+        const message =
+          err && typeof err === "object" && "data" in err
+            ? String((err as { data?: { message?: string } }).data?.message || "")
+            : "";
+        setErrors([message || "Could not submit exam. Please try again."]);
         setStep("register");
       }
     },
-    [answers, email, exam?.id, name, phone, questions, startedAt, step, studentId, submitExamApi],
+    [answers, email, exam?.id, name, phone, questions, step, studentId, submitExamApi],
   );
 
   useEffect(() => {
@@ -511,14 +513,12 @@ export default function ScholarshipPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                    <p className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Answer breakdown</p>
-                    <BreakdownChart
-                      correct={Number(result.correct ?? 0)}
-                      wrong={Number(result.wrong ?? 0)}
-                      skipped={Number(result.skipped ?? 0)}
-                    />
-                  </div>
+                  {result.correct != null && result.wrong != null && result.skipped != null ? (
+                    <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+                      <p className="mb-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Answer breakdown</p>
+                      <BreakdownChart correct={result.correct} wrong={result.wrong} skipped={result.skipped} />
+                    </div>
+                  ) : null}
 
                   <div className={`mt-6 rounded-2xl border p-5 ${result.couponCode ? "border-accent/30 bg-accent/10" : "border-white/10 bg-white/[0.03]"}`}>
                     {result.couponCode ? (

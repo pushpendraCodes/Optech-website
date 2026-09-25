@@ -38,18 +38,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       api.dispatch(clearStudentSession());
       return result;
     }
-    const refreshToken = (api.getState() as RootState).studentAuth.refreshToken;
-    const refresh = await rawBase(
-      { url: "/auth/refresh", method: "POST", body: refreshToken ? { refreshToken } : undefined },
-      api,
-      extra,
-    );
+    const refresh = await rawBase({ url: "/auth/refresh", method: "POST" }, api, extra);
     if (refresh.data) {
       const body = refresh.data as ApiSuccess<AuthPayload>;
       api.dispatch(
         setStudentSession({
           accessToken: body.data.accessToken,
-          refreshToken: body.data.refreshToken ?? null,
+          refreshToken: null,
           name: body.data.user.name,
           studentCode: body.data.user.studentCode || body.data.user.studentId || null,
         }),
